@@ -39,7 +39,7 @@ return (
 {docs.map(d => (
 <View key={d.id}>
 <Text>{d.name}</Text>
-<Image source={{ uri: d.uri }} style={{ width: 100, height: 100 }} />
+<Image source={{ uri: d.uri }} style={{ width: 100, height: 100, resizeMode: "contain", marginTop: 100 }} />
 </View>
 ))}
 </View>

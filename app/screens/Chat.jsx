@@ -68,7 +68,7 @@ export default function Chat({ route, navigation }) {
         { id: `${Date.now()}-bot`, text: r, isUser: false },
       ]);
     } catch (e) {
-      setError("Could not get a reply. Check connection and try again.");
+      setError(e?.message || "Could not get a reply. Check connection and try again.");
     } finally {
       setLoading(false);
       scrollToEnd();

@@ -17,8 +17,31 @@ export const api = axios.create({
 
 export async function sendPrompt(prompt, language = "en") 
 {
-  const res = await api.post(`/chat`, { prompt, language });
+  try {
+    const res = await api.post(`/chat`, { prompt, language });
     return res.data?.text || "I couldn't produce a reply.";
+  } catch (error) {
+    const baseUrl = getApiBaseUrl();
+    const status = error?.response?.status;
+    const data = error?.response?.data;
+    const serverMsg =
+      data?.error ||
+      data?.detail?.error?.message ||
+      data?.detail?.message ||
+      null;
+
+    console.error("Error in sendPrompt:", { baseUrl, status, data });
+
+    if (!status) {
+      throw new Error(`Cannot reach server at ${baseUrl}. Check Wi‑Fi/IP and that backend is running.`);
+    }
+
+    throw new Error(
+      serverMsg
+        ? `Server error (${status}): ${serverMsg}`
+        : `Server error (${status}). Check backend logs.`
+    );
+  }
   // try {
     
   // }catch(error)
