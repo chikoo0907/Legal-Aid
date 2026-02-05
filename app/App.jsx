@@ -8,6 +8,7 @@ import Chat from "./screens/Chat";
 import Vault from "./screens/Vault";
 import KnowRights from "./screens/KnowRights";
 import Awareness from "./screens/Awareness";
+import DocumentsNeeded from "./screens/DocumentsNeeded";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
 const Stack = createNativeStackNavigator();
@@ -35,6 +36,7 @@ function RootNavigator() {
         <Stack.Screen name="Chat" component={Chat} />
         <Stack.Screen name="KnowRights" component={KnowRights} />
         <Stack.Screen name="Awareness" component={Awareness} />
+        <Stack.Screen name="DocumentsNeeded" component={DocumentsNeeded} />
         <Stack.Screen name="Vault" component={Vault} />
       </Stack.Navigator>
     </NavigationContainer>

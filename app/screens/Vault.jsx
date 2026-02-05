@@ -34,14 +34,29 @@ useEffect(() => { loadDocs(); }, [userId]);
 
 
 return (
-<View>
-<Button title="Upload Document" onPress={pickImage} />
-{docs.map(d => (
-<View key={d.id}>
-<Text>{d.name}</Text>
-<Image source={{ uri: d.uri }} style={{ width: 100, height: 100, resizeMode: "contain", marginTop: 100 }} />
-</View>
-))}
-</View>
+  <View style={{ flex: 1 }}>
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <Button title="Upload Document" onPress={pickImage} />
+    </View>
+
+    <View style={{ flex: 2 }}>
+      {docs.map(d => (
+        <View key={d.id}>
+          <Text>{d.name}</Text>
+          <Image
+            source={{ uri: d.uri }}
+            style={{ width: 100, height: 100, resizeMode: "contain", marginTop: 20 }}
+          />
+        </View>
+      ))}
+    </View>
+  </View>
 );
+
 }

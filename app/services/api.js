@@ -70,3 +70,14 @@ export async function listVaultDocuments(userId) {
   const res = await api.get(`/vault/${userId}`);
   return res.data;
 }
+
+export async function getDocumentsList(params = {}) {
+  const { q = "", category = "" } = params;
+  const res = await api.get("/documents", { params: { q, category } });
+  return res.data;
+}
+
+export async function getDocumentById(id) {
+  const res = await api.get(`/documents/${id}`);
+  return res.data;
+}

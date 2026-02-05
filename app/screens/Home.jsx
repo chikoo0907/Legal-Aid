@@ -10,6 +10,7 @@ const translations = {
     knowRights: "Know Your Rights",
     awareness: "Awareness",
     vault: "Vault",
+    documentsNeeded: "Documents Needed",
   },
   hi: {
     title: "न्यायसहायक",
@@ -18,6 +19,7 @@ const translations = {
     knowRights: "अपने अधिकार जानें",
     awareness: "जागरूकता",
     vault: "तिजोरी",
+    documentsNeeded: "आवश्यक दस्तावेज़",
   },
   mr: {
     title: "न्यायसहायक",
@@ -26,6 +28,7 @@ const translations = {
     knowRights: "तुमचे हक्क जाणून घ्या",
     awareness: "जागरूकता",
     vault: "तिजोरी",
+    documentsNeeded: "आवश्यक दस्तावेज़",
   },
   gu: {
     title: "ન્યાયસહાયક",
@@ -34,6 +37,7 @@ const translations = {
     knowRights: "તમારા અધિકારો જાણો",
     awareness: "જાગૃતિ",
     vault: "વૉલ્ટ",
+    documentsNeeded: "જરૂરી દસ્તાવેજો",
   },
   pa: {
     title: "ਨਿਆਇਸਹਾਇਕ",
@@ -42,6 +46,7 @@ const translations = {
     knowRights: "ਆਪਣੇ ਅਧਿਕਾਰ ਜਾਣੋ",
     awareness: "ਜਾਗਰੂਕਤਾ",
     vault: "ਵੌਲਟ",
+    documentsNeeded: "ਲੋੜੀਂਦੇ ਦਸਤਾਵੇਜ਼",
   },
   ta: {
     title: "நியாயஸஹாயக்",
@@ -50,6 +55,7 @@ const translations = {
     knowRights: "உங்கள் உரிமைகளை அறிந்து கொள்ளுங்கள்",
     awareness: "விழிப்புணர்வு",
     vault: "வால்ட்",
+    documentsNeeded: "தேவையான ஆவணங்கள்",
   },
   te: {
     title: "న్యాయసహాయక్",
@@ -58,6 +64,7 @@ const translations = {
     knowRights: "మీ హక్కులను తెలుసుకోండి",
     awareness: "అవగాహన",
     vault: "వాల్ట్",
+    documentsNeeded: "అవసరమైన డాక్యుమెంట్లు",
   },
 };
 
@@ -94,6 +101,13 @@ export default function Home({ navigation, route }) {
           onPress={() => navigation.navigate("Awareness", { language })}
         >
           <Text style={styles.buttonText}>{t.awareness}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate("DocumentsNeeded", { language })}
+        >
+          <Text style={styles.buttonText}>{t.documentsNeeded}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
