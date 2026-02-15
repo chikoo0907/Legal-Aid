@@ -24,7 +24,12 @@
       "package": "com.raj98923.LegalAid"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "favicon": "./assets/favicon.png",
+      "output": "static",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-video"
+    ]
   }
 }

@@ -1,0 +1,29 @@
+{
+  "situation_id": "legal_notice",
+  "title": "Sending a Legal Notice",
+  "category": "Civil Procedure",
+  "problem_summary": "A legal notice is a formal communication before initiating legal action.",
+  "law_basics": ["Civil Procedure Code"],
+  "step_by_step_procedure": [
+    { "step": 1, "description": "Identify the issue and opposing party." },
+    { "step": 2, "description": "Draft the notice clearly stating demands." },
+    { "step": 3, "description": "Send notice through registered post or email." },
+    { "step": 4, "description": "Wait for response within stipulated time." }
+  ],
+  "documents_required": [
+    { "name": "Supporting Documents", "mandatory": true },
+    { "name": "Identity Proof", "mandatory": false }
+  ],
+  "where_to_go": ["Post Office", "Email"],
+  "time_limits": "Typically 15–30 days for response",
+  "can_be_done_without_lawyer": true,
+  "escalation_path": [
+    { "condition": "No response", "action": "Initiate legal proceedings" }
+  ],
+  "tips_and_warnings": [
+    "Be factual and clear",
+    "Avoid abusive language"
+  ],
+  "official_references": ["https://www.indiacode.nic.in"],
+  "disclaimer": "General legal information only."
+}

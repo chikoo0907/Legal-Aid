@@ -1,0 +1,28 @@
+{
+  "situation_id": "rti_filing",
+  "title": "How to File an RTI Application",
+  "category": "Transparency Law",
+  "problem_summary": "RTI allows citizens to seek information from public authorities.",
+  "law_basics": ["Right to Information Act, 2005"],
+  "step_by_step_procedure": [
+    { "step": 1, "description": "Identify the public authority." },
+    { "step": 2, "description": "Draft RTI questions clearly." },
+    { "step": 3, "description": "Submit RTI online or offline with fee." },
+    { "step": 4, "description": "Receive reply within stipulated time." }
+  ],
+  "documents_required": [
+    { "name": "Application Details", "mandatory": true }
+  ],
+  "where_to_go": ["https://rtionline.gov.in"],
+  "time_limits": "30 days",
+  "can_be_done_without_lawyer": true,
+  "escalation_path": [
+    { "condition": "No reply", "action": "File First Appeal" }
+  ],
+  "tips_and_warnings": [
+    "Ask specific questions",
+    "Keep proof of submission"
+  ],
+  "official_references": ["https://rtionline.gov.in"],
+  "disclaimer": "General legal information only."
+}

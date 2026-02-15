@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   FlatList,
   TextInput,
@@ -10,6 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getDocumentsList } from "../services/api";
+import { MaterialIcons } from "@expo/vector-icons";
 
 const translations = {
   en: {
@@ -17,8 +17,8 @@ const translations = {
     subtitle: "Indian laws & procedures",
     search: "Search (e.g. PAN, land, passport)",
     all: "All",
-    documents: "Documents required",
-    steps: "Steps",
+    documents: "Documents Required",
+    steps: "Steps to Follow",
   },
   hi: {
     title: "आवश्यक दस्तावेज़",
@@ -45,10 +45,18 @@ export default function DocumentsNeeded({ navigation, route }) {
   const load = useCallback(async (q = "", cat = "") => {
     setLoading(true);
     setError(null);
+
     try {
       const data = await getDocumentsList({ q, category: cat });
-      setCategories(data.categories || []);
-      setItems(data.items || []);
+
+      const items = Array.isArray(data) ? data : data.items || [];
+      const categories = data.categories || [];
+
+      setCategories(categories);
+      setItems(items);
+
+      console.log("Documents API response:", data);
+
     } catch (e) {
       setError(e.message || "Failed to load.");
       setItems([]);
@@ -67,12 +75,21 @@ export default function DocumentsNeeded({ navigation, route }) {
   const renderCategory = ({ item }) => {
     const label = language === "hi" ? item.labelHi : item.labelEn;
     const active = categoryId === item.id;
+
     return (
       <TouchableOpacity
-        style={[styles.chip, active && styles.chipActive]}
         onPress={() => setCategoryId(active ? "" : item.id)}
+        className={`h-9 px-5 rounded-full mr-2 ${
+          active
+            ? "bg-[#1152d4]"
+            : "bg-white border border-slate-200"
+        }`}
       >
-        <Text style={[styles.chipText, active && styles.chipTextActive]}>
+        <Text
+          className={`text-sm font-medium ${
+            active ? "text-white" : "text-slate-600"
+          }`}
+        >
           {label}
         </Text>
       </TouchableOpacity>
@@ -81,22 +98,76 @@ export default function DocumentsNeeded({ navigation, route }) {
 
   const renderItem = ({ item }) => {
     const isSelected = selected?.id === item.id;
+
     return (
       <TouchableOpacity
-        style={[styles.card, isSelected && styles.cardSelected]}
-        onPress={() => setSelected(isSelected ? null : item)}
         activeOpacity={0.7}
+        onPress={() => setSelected(isSelected ? null : item)}
+        className={`rounded-xl mb-4 overflow-hidden ${
+          isSelected
+            ? "bg-white border-l-4 border-[#1152d4] shadow-md"
+            : "bg-white border border-slate-200"
+        }`}
       >
-        <Text style={styles.cardTitle}>{item.titleEn}</Text>
+        {/* Header */}
+        <View className="p-4 flex-row justify-between items-center">
+          <View className="flex-row items-center gap-3">
+            <View className="bg-blue-100 p-2 rounded-lg">
+              <Text className="text-[#1152d4] font-bold">📄</Text>
+            </View>
+            <View>
+              <Text className="text-slate-900 font-bold text-base">
+                {item.titleEn}
+              </Text>
+              {item.subtitle && (
+                <Text className="text-xs text-slate-500">
+                  {item.subtitle}
+                </Text>
+              )}
+            </View>
+          </View>
+          <MaterialIcons
+            name={isSelected ? "expand-less" : "expand-more"}
+            size={24}
+            color="#94A3B8"
+          />
+        </View>
+
+        {/* Expanded Content */}
         {isSelected && (
-          <View style={styles.detail}>
-            <Text style={styles.detailHead}>{t.documents}</Text>
-            {(item.documents || []).map((d, i) => (
-              <Text key={i} style={styles.bullet}>• {d}</Text>
+          <View className="px-4 pb-5">
+            <View className="h-px bg-slate-200 mb-4" />
+
+            {/* Documents */}
+            <Text className="text-[#1152d4] font-bold text-sm mb-3">
+              {t.documents}
+            </Text>
+
+            {(item.documents || []).map((doc, i) => (
+              <View key={i} className="flex-row items-start mb-2 gap-2">
+                <Text className="text-[#1152d4] mt-0.5">✔</Text>
+                <Text className="text-sm text-slate-700 flex-1">
+                  {doc}
+                </Text>
+              </View>
             ))}
-            <Text style={[styles.detailHead, { marginTop: 12 }]}>{t.steps}</Text>
-            {(item.steps || []).map((s, i) => (
-              <Text key={i} style={styles.bullet}>• {s}</Text>
+
+            {/* Steps */}
+            <Text className="text-[#1152d4] font-bold text-sm mt-5 mb-3">
+              {t.steps}
+            </Text>
+
+            {(item.steps || []).map((step, i) => (
+              <View key={i} className="flex-row gap-3 mb-3">
+                <View className="h-6 w-6 rounded-full bg-[#1152d4] items-center justify-center">
+                  <Text className="text-white text-xs font-bold">
+                    {i + 1}
+                  </Text>
+                </View>
+                <Text className="text-sm text-slate-700 flex-1">
+                  {step}
+                </Text>
+              </View>
             ))}
           </View>
         )}
@@ -104,63 +175,75 @@ export default function DocumentsNeeded({ navigation, route }) {
     );
   };
 
+
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-          <Text style={styles.backText}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>{t.title}</Text>
-        <Text style={styles.subtitle}>{t.subtitle}</Text>
+    <SafeAreaView className="flex-1 bg-[#f6f6f8]">
+      {/* Header */}
+      <View className="bg-[#f6f6f8]/90 backdrop-blur px-4 py-4">
+        <View className="flex-row items-center">
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <MaterialIcons name="arrow-back-ios" size={20} color="#0d121b" />
+          </TouchableOpacity>
+          <View>
+            <Text className="text-xl font-bold text-slate-900">
+              {t.title}
+            </Text>
+            <Text className="text-xs uppercase tracking-wider text-[#1152d4]/70">
+              {t.subtitle}
+            </Text>
+          </View>
+        </View>
       </View>
 
-      <View style={styles.searchRow}>
-        <TextInput
-          style={styles.input}
-          placeholder={t.search}
-          placeholderTextColor="#94A3B8"
-          value={query}
-          onChangeText={setQuery}
-          onSubmitEditing={onSearch}
-        />
+      {/* Search */}
+      <View className="px-4 pb-4">
+        <View className="relative">
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            onSubmitEditing={onSearch}
+            placeholder={t.search}
+            placeholderTextColor="#94A3B8"
+            className="bg-white h-12 rounded-xl pl-4 pr-4 text-base shadow-sm"
+          />
+        </View>
       </View>
 
-      <View style={styles.chipsWrap}>
-        <TouchableOpacity
-          style={[styles.chip, !categoryId && styles.chipActive]}
-          onPress={() => setCategoryId("")}
-        >
-          <Text style={[styles.chipText, !categoryId && styles.chipTextActive]}>
-            {t.all}
-          </Text>
-        </TouchableOpacity>
+      {/* Categories */}
+      <View className="px-4 pb-4">
         <FlatList
           horizontal
-          data={categories}
-          keyExtractor={(c) => c.id}
-          renderItem={renderCategory}
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.chips}
+          data={[
+            { id: "", labelEn: t.all, labelHi: t.all }, 
+            ...categories
+          ]}
+          // data={categories}
+          keyExtractor={(item) => item.id || "all"}
+          renderItem={renderCategory}
         />
       </View>
 
+      {/* Content */}
       {error ? (
-        <View style={styles.centered}>
-          <Text style={styles.errorText}>{error}</Text>
+        <View className="flex-1 items-center justify-center px-6">
+          <Text className="text-red-600 text-center">{error}</Text>
         </View>
       ) : loading && items.length === 0 ? (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#0EA5E9" />
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#1152d4" />
         </View>
       ) : (
         <FlatList
           data={items}
-          keyExtractor={(i) => i.id}
+          keyExtractor={(item, index) =>
+            item.id || item._id || String(index)
+          }
           renderItem={renderItem}
-          contentContainerStyle={styles.list}
+          contentContainerClassName="px-4 pb-24"
           ListEmptyComponent={
-            <View style={styles.centered}>
-              <Text style={styles.muted}>No matches.</Text>
+            <View className="items-center py-20">
+              <Text className="text-slate-400">No matches found</Text>
             </View>
           }
         />
@@ -168,56 +251,3 @@ export default function DocumentsNeeded({ navigation, route }) {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F8FAFC" },
-  header: {
-    padding: 16,
-    paddingTop: 8,
-    backgroundColor: "#FFFFFF",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E2E8F0",
-  },
-  back: { alignSelf: "flex-start", padding: 4, marginBottom: 4 },
-  backText: { fontSize: 24, color: "#0EA5E9" },
-  title: { fontSize: 22, fontWeight: "bold", color: "#1E293B" },
-  subtitle: { fontSize: 14, color: "#64748B", marginTop: 4 },
-  searchRow: { padding: 12, backgroundColor: "#FFF" },
-  input: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: 10,
-    padding: 12,
-    fontSize: 16,
-    color: "#1E293B",
-  },
-  chipsWrap: { flexDirection: "row", alignItems: "center", paddingVertical: 8 },
-  chips: { paddingHorizontal: 12, gap: 8 },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: "#E2E8F0",
-    marginLeft: 12,
-  },
-  chipActive: { backgroundColor: "#0EA5E9" },
-  chipText: { fontSize: 14, color: "#475569" },
-  chipTextActive: { color: "#FFF" },
-  list: { padding: 12, paddingBottom: 32 },
-  card: {
-    backgroundColor: "#FFF",
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-  },
-  cardSelected: { borderColor: "#0EA5E9", borderWidth: 2 },
-  cardTitle: { fontSize: 16, fontWeight: "600", color: "#1E293B" },
-  detail: { marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: "#E2E8F0" },
-  detailHead: { fontSize: 14, fontWeight: "600", color: "#475569" },
-  bullet: { fontSize: 14, color: "#64748B", marginTop: 4, marginLeft: 4 },
-  centered: { flex: 1, justifyContent: "center", alignItems: "center", padding: 24 },
-  errorText: { color: "#DC2626", textAlign: "center" },
-  muted: { color: "#94A3B8" },
-});

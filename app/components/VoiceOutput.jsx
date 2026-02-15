@@ -1,5 +1,6 @@
+import { MaterialIcons } from "@expo/vector-icons";
 import * as Speech from "expo-speech";
-import { TouchableOpacity, Text, StyleSheet } from "react-native";
+import { TouchableOpacity } from "react-native";
 
 const languageCodes = {
   en: "en-US",
@@ -26,28 +27,10 @@ export default function VoiceOutput({ text, language = "en" }) {
   return (
     <TouchableOpacity
       accessibilityLabel="Play response audio"
-      style={styles.button}
+      className="w-11 h-11 rounded-full bg-[#1152d4] items-center justify-center self-start ml-3 mb-2"
       onPress={speak}
     >
-      <Text style={styles.icon}>🔈</Text>
+     <MaterialIcons size={22} color={"#ffffff"} name="campaign"/>
     </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "#0EA5E9",
-    alignItems: "center",
-    justifyContent: "center",
-    alignSelf: "flex-start",
-    marginLeft: 12,
-    marginBottom: 8,
-  },
-  icon: {
-    fontSize: 18,
-    color: "#FFFFFF",
-  },
-});

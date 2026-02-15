@@ -2,107 +2,118 @@ import { useState, useEffect } from "react";
 import {
   View,
   TextInput,
-  Button,
   Text,
   Alert,
-  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { login as apiLogin } from "../services/api";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "../context/AuthContext";
-
+import { Ionicons } from "@expo/vector-icons";
 
 export default function Login({ navigation }) {
-const [email, setEmail] = useState("");
-const [password, setPassword] = useState("");
-const { login, isAuthenticated, loading } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const { login, isAuthenticated, loading } = useAuth();
 
-// Redirect if already logged in
-useEffect(() => {
-  if (!loading && isAuthenticated) {
-    navigation.replace("Home");
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      navigation.replace("Home");
+    }
+  }, [isAuthenticated, loading, navigation]);
+
+  async function handleLogin() {
+    try {
+      const user = await apiLogin(email, password);
+      await login(user);
+      navigation.replace("Home", { user });
+    } catch (e) {
+      Alert.alert("Login failed", "Invalid credentials or server not reachable.");
+    }
   }
-}, [isAuthenticated, loading, navigation]);
 
+  return (
+    <SafeAreaView className="flex-1 bg-[#f6f6f8]">
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <View className="flex-1 justify-center px-6">
 
-async function handleLogin() {
-try {
-  const user = await apiLogin(email, password);
-  await login(user);
-  navigation.replace("Home", { user });
-} catch (e) {
-  Alert.alert("Login failed", "Invalid credentials or server not reachable.");
+          {/* Icon */}
+          <View className="items-center mb-10">
+            <View className="w-20 h-20 bg-[#1152d4]/10 rounded-full items-center justify-center">
+              <Ionicons name="shield-checkmark-outline" size={40} color="#1152d4" />
+            </View>
+          </View>
+
+          {/* Header */}
+          <View className="items-center mb-16">
+            <Text className="text-3xl font-bold text-[#0f172a]">
+              Welcome Back
+            </Text>
+            <Text className="text-[#64748b] mt-2 text-center">
+              Sign in to your legal assistant
+            </Text>
+          </View>
+
+          {/* Email */}
+          <View>
+            <Text className="text-xs font-semibold text-[#475569] mb-2">
+              EMAIL
+            </Text>
+            <View className="flex-row items-center border border-[#1152d4]/30 bg-[#f1f5f9] rounded-xl px-4 py-4">
+              <Ionicons name="mail-outline" size={18} color="#94a3b8" />
+              <TextInput
+                value={email}
+                onChangeText={setEmail}
+                placeholder="you@example.com"
+                placeholderTextColor="#94a3b8"
+                autoCapitalize="none"
+                className="flex-1 ml-3 text-[#0f172a]"
+              />
+            </View>
+          </View>
+
+          {/* Password */}
+          <View className="mt-5">
+            <Text className="text-xs font-semibold text-[#475569] mb-2">
+              PASSWORD
+            </Text>
+            <View className="flex-row border border-[#1152d4]/30 items-center bg-[#f1f5f9] rounded-xl px-4 py-4">
+              <Ionicons name="lock-closed-outline" size={18} color="#94a3b8" />
+              <TextInput
+                value={password}
+                onChangeText={setPassword}
+                placeholder="••••••••"
+                placeholderTextColor="#94a3b8"
+                secureTextEntry
+                className="flex-1 ml-3 text-[#0f172a]"
+              />
+            </View>
+          </View>
+
+          {/* Button */}
+          <TouchableOpacity
+            onPress={handleLogin}
+            className="bg-[#1152d4] rounded-xl py-4 mt-16 items-center shadow-lg"
+          >
+            <Text className="text-white font-bold text-base">
+              Login
+            </Text>
+          </TouchableOpacity>
+
+          {/* Footer */}
+          <Text className="text-center text-[#64748b] mt-8">
+            New here?{" "}
+            <Text
+              className="text-[#1152d4] font-semibold"
+              onPress={() => navigation.navigate("Register")}
+            >
+              Create an account
+            </Text>
+          </Text>
+
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
 }
-}
-
-
-return (
-  <SafeAreaView style={styles.safe}>
-    <View style={styles.header}>
-      <Text style={styles.title}>Welcome back</Text>
-      <Text style={styles.subtitle}>Sign in to your legal assistant</Text>
-    </View>
-    <View style={styles.card}>
-      <Text style={styles.label}>Email</Text>
-      <TextInput
-        value={email}
-        onChangeText={setEmail}
-        placeholder="you@example.com"
-        style={styles.input}
-        autoCapitalize="none"
-      />
-
-      <Text style={styles.label}>Password</Text>
-      <TextInput
-        value={password}
-        onChangeText={setPassword}
-        placeholder="••••••••"
-        secureTextEntry
-        style={styles.input}
-      />
-
-      <View style={styles.actions}>
-        <Button title="Login" onPress={handleLogin} />
-      </View>
-      <Text style={styles.footerText}>
-        New here?{" "}
-        <Text style={styles.link} onPress={() => navigation.navigate("Register")}>
-          Create an account
-        </Text>
-      </Text>
-    </View>
-  </SafeAreaView>
-);
-}
-
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#F8FAFC", padding: 16 },
-  header: { marginBottom: 20 },
-  title: { fontSize: 24, fontWeight: "700", color: "#0F172A" },
-  subtitle: { color: "#475569", marginTop: 4 },
-  card: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    padding: 16,
-    gap: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 3,
-  },
-  label: { color: "#0F172A", fontWeight: "600", marginBottom: 4 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: "#F8FAFC",
-    color: "#0F172A",
-  },
-  actions: { marginTop: 4 },
-  footerText: { marginTop: 12, color: "#475569", textAlign: "center" },
-  link: { color: "#2563EB", fontWeight: "600" },
-});

@@ -1,0 +1,31 @@
+{
+  "situation_id": "road_accident",
+  "title": "Road Accident and RTO Procedures",
+  "category": "Motor Vehicle Law",
+  "problem_summary": "Steps to follow after a road accident and related RTO procedures.",
+  "law_basics": ["Motor Vehicles Act"],
+  "step_by_step_procedure": [
+    { "step": 1, "description": "Ensure safety and seek medical help." },
+    { "step": 2, "description": "Inform police and file an FIR if required." },
+    { "step": 3, "description": "Collect accident details and evidence." },
+    { "step": 4, "description": "Inform insurance company." },
+    { "step": 5, "description": "Approach RTO or insurance for claims." }
+  ],
+  "documents_required": [
+    { "name": "Driving License", "mandatory": true },
+    { "name": "Vehicle Registration", "mandatory": true },
+    { "name": "Insurance Policy", "mandatory": false }
+  ],
+  "where_to_go": ["Police Station", "Insurance Office", "RTO"],
+  "time_limits": "Immediately or within 24 hours",
+  "can_be_done_without_lawyer": true,
+  "escalation_path": [
+    { "condition": "Insurance dispute", "action": "Approach Motor Accident Claims Tribunal" }
+  ],
+  "tips_and_warnings": [
+    "Do not flee the accident scene",
+    "Take photos if safe"
+  ],
+  "official_references": ["https://parivahan.gov.in"],
+  "disclaimer": "General legal information only."
+}

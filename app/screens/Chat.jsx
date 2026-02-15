@@ -1,10 +1,8 @@
-import { useMemo, useRef, useState, useEffect } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
-  TextInput,
-  Button,
   Text,
-  StyleSheet,
+  TextInput,
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
@@ -12,235 +10,180 @@ import {
   Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { MaterialIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import LanguageSelector from "../components/LanguageSelector";
+
 import { sendPrompt } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 import VoiceInput from "../components/VoiceInput";
 import VoiceOutput from "../components/VoiceOutput";
-import ChatBubble from "../components/ChatBubble";
-import LanguageSelector from "../components/LanguageSelector";
-import { useAuth } from "../context/AuthContext";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-
 
 export default function Chat({ route, navigation }) {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
-  const [language, setLanguage] = useState("en");
+  const [language, setLanguage] = useState("EN");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
   const flatListRef = useRef(null);
   const { user, setUser } = useAuth();
   const routeUser = route?.params?.user;
+
   useEffect(() => {
     if (!user && routeUser) {
-      // sync context if landed with param user
       setUser(routeUser);
-      AsyncStorage.setItem("auth_user", JSON.stringify(routeUser)).catch(() => {});
+      AsyncStorage.setItem("auth_user", JSON.stringify(routeUser));
     }
-  }, [routeUser, user, setUser]);
+  }, [routeUser]);
 
   const canSend = useMemo(
     () => input.trim().length > 0 && !loading,
     [input, loading]
   );
 
-  const scrollToEnd = () => {
-    requestAnimationFrame(() =>
-      flatListRef.current?.scrollToEnd({ animated: true })
-    );
-  };
-
-  async function ask() {
+  const ask = async () => {
     if (!canSend) return;
+
     const text = input.trim();
     setInput("");
-    setError("");
+
     setMessages((prev) => [
       ...prev,
-      { id: `${Date.now()}-user`, text, isUser: true },
+      { id: Date.now().toString(), text, isUser: true },
     ]);
-    scrollToEnd();
+
     setLoading(true);
+
     try {
-      const r = await sendPrompt(text, language);
+      const reply = await sendPrompt(text, language);
       setMessages((prev) => [
         ...prev,
-        { id: `${Date.now()}-bot`, text: r, isUser: false },
+        { id: Date.now().toString() + "-bot", text: reply, isUser: false },
       ]);
-    } catch (e) {
-      setError(e?.message || "Could not get a reply. Check connection and try again.");
     } finally {
       setLoading(false);
-      scrollToEnd();
     }
-  }
+  };
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>Legal Assistant</Text>
-          <Text style={styles.subtitle}>
-            Ask legal questions in simple language
+    <SafeAreaView className="flex-1 bg-[#f6f6f8]">
+      {/* ---------- HEADER ---------- */}
+      <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
+        <View className="flex-row items-center gap-3">
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <MaterialIcons name="arrow-back-ios" size={20} color="#0d121b" />
+          </TouchableOpacity>
+
+          <View>
+            <Text className="text-base font-bold text-[#0d121b]">
+              {user.email}
+            </Text>
+            <View className="flex-row items-center gap-1">
+              <View className="w-2 h-2 rounded-full bg-green-500" />
+              <Text className="text-xs text-gray-500">Online</Text>
+            </View>
+          </View>
+        </View>
+
+        <View className="px-3 py-1 rounded-full bg-gray-100">
+          <Text className="text-xs font-bold text-[#1152d4]">
+            {language}
           </Text>
         </View>
-        {!!user && (
-          <View style={styles.userPill}>
-            <Text style={styles.userPillText}>{user.email}</Text>
-          </View>
-        )}
       </View>
 
+      {/* ---------- LANGUAGE SELECTOR ---------- */}
       <LanguageSelector value={language} onChange={setLanguage} />
 
+      {/* ---------- CHAT AREA ---------- */}
       <KeyboardAvoidingView
-        style={styles.flex}
+        className="flex-1"
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
       >
         <FlatList
           ref={flatListRef}
           data={messages}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.list}
-          renderItem={({ item }) => (
-            <ChatBubble text={item.text} isUser={item.isUser} />
-          )}
+          contentContainerStyle={{ padding: 16 }}
+          renderItem={({ item }) =>
+            item.isUser ? (
+              /* USER MESSAGE */
+              <View className="items-end mb-4">
+                <Text className="text-[11px] text-gray-400 mb-1">You</Text>
+                <View className="bg-[#1152d4] px-4 py-3 rounded-xl rounded-br-none max-w-[80%]">
+                  <Text className="text-white text-sm leading-relaxed">
+                    {item.text}
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              /* BOT MESSAGE */
+              <View className="items-start mb-4">
+                <Text className="text-[11px] text-gray-400 mb-1">
+                  NyayaSahayak
+                </Text>
+                <View className="bg-white border border-gray-200 px-4 py-3 rounded-xl rounded-bl-none max-w-[80%]">
+                  <Text className="text-[#0d121b] text-sm leading-relaxed">
+                    {item.text}
+                  </Text>
+                </View>
+              </View>
+            )
+          }
           ListEmptyComponent={
-            <View style={styles.empty}>
-              <Text style={styles.emptyTitle}>Welcome</Text>
-              <Text style={styles.emptySubtitle}>
-                Ask me anything about legal rights, processes, or documents.
+            <View className="items-center mt-16">
+              <Text className="text-sm text-gray-500">
+                Ask me about your legal rights 🇮🇳
+              </Text>
+              <Text className="text-sm text-gray-500">
+                Send Hi to start chatting
               </Text>
             </View>
           }
         />
 
         {loading && (
-          <View style={styles.loadingRow}>
-            <ActivityIndicator size="small" color="#2563EB" />
-            <Text style={styles.loadingText}>Thinking...</Text>
+          <View className="flex-row items-center px-4 pb-2 gap-2">
+            <ActivityIndicator size="small" color="#1152d4" />
+            <Text className="text-gray-500 text-sm">Thinking…</Text>
           </View>
         )}
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
-        <View style={styles.inputRow}>
-          <VoiceInput onResult={setInput} />
-          <TextInput
-            value={input}
-            onChangeText={setInput}
-            placeholder="Type your question..."
-            style={styles.input}
-            multiline
-          />
-          <TouchableOpacity
-            style={[styles.sendBtn, !canSend && styles.sendBtnDisabled]}
-            onPress={ask}
-            disabled={!canSend}
-          >
-            <Text style={styles.sendBtnText}>Send</Text>
-          </TouchableOpacity>
-        </View>
+        {/* ---------- INPUT AREA ---------- */}
+        <View className="border-t border-gray-200 bg-white px-4 pt-3 pb-6">
+          <View className="flex-row items-center gap-2">
+            <View className="flex-1 relative">
+              <TextInput
+                value={input}
+                onChangeText={setInput}
+                placeholder="Ask about your rights..."
+                className="bg-gray-100 rounded-2xl px-4 py-3 pr-10 text-sm"
+                multiline
+              />
+              <TouchableOpacity
+                onPress={ask}
+                disabled={!canSend}
+                className="absolute right-3 top-1/2 -translate-y-1/2"
+              >
+                <MaterialIcons
+                  name="send"
+                  size={20}
+                  color={canSend ? "#1152d4" : "#9ca3af"}
+                />
+              </TouchableOpacity>
+            </View>
 
-        <VoiceOutput text={messages[messages.length - 1]?.text || ""} language={language} />
-
-        {!!user && (
-          <View style={styles.vaultRow}>
-            <Button
-              title="Open Vault"
-              onPress={() => navigation.navigate("Vault", { userId: user.id })}
-            />
-            <View style={{ height: 8 }} />
-            <Button
-              title="Logout"
-              color="#EF4444"
-              onPress={async () => {
-                await AsyncStorage.removeItem("auth_user");
-                setUser(null);
-                navigation.replace("Login");
-              }}
-            />
+            <VoiceOutput text={messages[messages.length - 1]?.text || ""} language={language} />
           </View>
-        )}
+
+          <Text className="text-[10px] text-center text-gray-400 mt-3">
+            NyayaSahayak provides legal information, not legal advice.
+          </Text>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#F8FAFC" },
-  header: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderColor: "#E5E7EB",
-    backgroundColor: "#FFFFFF",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  title: { fontSize: 20, fontWeight: "700", color: "#0F172A" },
-  subtitle: { color: "#475569", marginTop: 4 },
-  userPill: {
-    backgroundColor: "#E0F2FE",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
-  },
-  userPillText: { color: "#0369A1", fontSize: 12 },
-  flex: { flex: 1 },
-  list: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 12 },
-  empty: {
-    paddingVertical: 40,
-    alignItems: "center",
-    gap: 6,
-  },
-  emptyTitle: { fontSize: 18, fontWeight: "600", color: "#0F172A" },
-  emptySubtitle: { color: "#475569", textAlign: "center" },
-  loadingRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingBottom: 8,
-  },
-  loadingText: { color: "#475569" },
-  error: {
-    color: "#DC2626",
-    paddingHorizontal: 16,
-    paddingBottom: 6,
-  },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    gap: 10,
-    padding: 12,
-    backgroundColor: "#FFFFFF",
-    borderTopWidth: 1,
-    borderColor: "#E5E7EB",
-  },
-  input: {
-    flex: 1,
-    minHeight: 46,
-    maxHeight: 120,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: "#F8FAFC",
-    color: "#0F172A",
-  },
-  sendBtn: {
-    backgroundColor: "#2563EB",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 12,
-  },
-  sendBtnDisabled: {
-    backgroundColor: "#94A3B8",
-  },
-  sendBtnText: { color: "#FFFFFF", fontWeight: "600" },
-  vaultRow: { paddingHorizontal: 16, paddingBottom: 12, paddingTop: 4 },
-});
