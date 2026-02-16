@@ -1,0 +1,31 @@
+{
+  "situation_id": "consumer_complaint",
+  "title": "How to File a Consumer Complaint",
+  "category": "Consumer Rights",
+  "problem_summary": "If a seller or service provider cheats you or provides defective goods or services, you can file a consumer complaint.",
+  "law_basics": ["Consumer Protection Act, 2019"],
+  "step_by_step_procedure": [
+    { "step": 1, "description": "Contact the seller or service provider and try to resolve the issue." },
+    { "step": 2, "description": "Collect bills, receipts, warranty cards, and communication records." },
+    { "step": 3, "description": "Register a complaint on the National Consumer Helpline portal." },
+    { "step": 4, "description": "If unresolved, file a complaint on the e-Daakhil portal." },
+    { "step": 5, "description": "Track complaint status and attend hearings if required." }
+  ],
+  "documents_required": [
+    { "name": "Invoice or Bill", "mandatory": true },
+    { "name": "Identity Proof", "mandatory": true },
+    { "name": "Communication Records", "mandatory": false }
+  ],
+  "where_to_go": ["https://consumerhelpline.gov.in", "https://edaakhil.nic.in"],
+  "time_limits": "Within 2 years from the date of cause",
+  "can_be_done_without_lawyer": true,
+  "escalation_path": [
+    { "condition": "No resolution", "action": "Approach District Consumer Commission" }
+  ],
+  "tips_and_warnings": [
+    "Keep copies of all documents",
+    "File complaint as early as possible"
+  ],
+  "official_references": ["https://consumerhelpline.gov.in"],
+  "disclaimer": "General legal information only."
+}

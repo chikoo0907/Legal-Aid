@@ -1,0 +1,30 @@
+{
+  "situation_id": "domestic_violence",
+  "title": "Domestic Violence Protection",
+  "category": "Family Law",
+  "problem_summary": "Protection against physical, emotional, or economic abuse within domestic relationships.",
+  "law_basics": ["Protection of Women from Domestic Violence Act, 2005"],
+  "step_by_step_procedure": [
+    { "step": 1, "description": "Ensure immediate safety and seek help if needed." },
+    { "step": 2, "description": "Contact police, protection officer, or women helpline." },
+    { "step": 3, "description": "File a complaint or application before Magistrate." },
+    { "step": 4, "description": "Seek protection or residence orders." }
+  ],
+  "documents_required": [
+    { "name": "Identity Proof", "mandatory": true },
+    { "name": "Medical Reports", "mandatory": false },
+    { "name": "Incident Evidence", "mandatory": false }
+  ],
+  "where_to_go": ["Police Station", "Protection Officer", "Magistrate Court"],
+  "time_limits": "As early as possible",
+  "can_be_done_without_lawyer": true,
+  "escalation_path": [
+    { "condition": "No help received", "action": "Approach Legal Services Authority" }
+  ],
+  "tips_and_warnings": [
+    "Seek help immediately if in danger",
+    "Free legal aid is available"
+  ],
+  "official_references": ["https://wcd.nic.in", "https://nalsa.gov.in"],
+  "disclaimer": "General legal information only."
+}

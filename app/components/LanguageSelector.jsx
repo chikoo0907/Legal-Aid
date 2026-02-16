@@ -1,4 +1,4 @@
-import { View, Text, Pressable, StyleSheet, ScrollView } from "react-native";
+import { View, Text, Pressable, ScrollView } from "react-native";
 
 const LANGUAGES = [
   { label: "English", value: "en" },
@@ -12,11 +12,15 @@ const LANGUAGES = [
 
 export default function LanguageSelector({ value, onChange }) {
   return (
-    <View style={styles.wrap}>
+    <View className="bg-white border-b border-gray-200">
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.row}
+        contentContainerStyle={{
+          paddingHorizontal: 12,
+          paddingVertical: 10,
+          gap: 8,
+        }}
       >
         {LANGUAGES.map((l) => {
           const active = l.value === value;
@@ -24,9 +28,13 @@ export default function LanguageSelector({ value, onChange }) {
             <Pressable
               key={l.value}
               onPress={() => onChange(l.value)}
-              style={[styles.pill, active && styles.pillActive]}
+              className={`px-3 py-2 rounded-full border ${
+                active
+                  ? "bg-blue-600 border-blue-600"
+                  : "bg-slate-100 border-slate-200"
+              }`}
             >
-              <Text style={[styles.text, active && styles.textActive]}>
+              <Text className={`text-xs font-semibold ${active ? "text-white" : "text-slate-900"}`}>
                 {l.label}
               </Text>
             </Pressable>
@@ -36,36 +44,3 @@ export default function LanguageSelector({ value, onChange }) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  wrap: {
-    backgroundColor: "#FFFFFF",
-    borderBottomWidth: 1,
-    borderColor: "#E5E7EB",
-  },
-  row: {
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    gap: 8,
-  },
-  pill: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: "#F1F5F9",
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-  },
-  pillActive: {
-    backgroundColor: "#2563EB",
-    borderColor: "#2563EB",
-  },
-  text: {
-    color: "#0F172A",
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  textActive: {
-    color: "#FFFFFF",
-  },
-});

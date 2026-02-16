@@ -1,0 +1,29 @@
+{
+  "situation_id": "free_legal_aid",
+  "title": "Free Legal Aid Services",
+  "category": "Legal Services",
+  "problem_summary": "Free legal aid is available for eligible citizens who cannot afford legal services.",
+  "law_basics": ["Legal Services Authorities Act, 1987"],
+  "step_by_step_procedure": [
+    { "step": 1, "description": "Check eligibility criteria." },
+    { "step": 2, "description": "Approach nearest Legal Services Authority." },
+    { "step": 3, "description": "Submit application with required documents." },
+    { "step": 4, "description": "Get assigned a legal aid lawyer." }
+  ],
+  "documents_required": [
+    { "name": "Income Proof", "mandatory": true },
+    { "name": "Identity Proof", "mandatory": true }
+  ],
+  "where_to_go": ["District Legal Services Authority", "https://nalsa.gov.in"],
+  "time_limits": "No strict limit",
+  "can_be_done_without_lawyer": true,
+  "escalation_path": [
+    { "condition": "No response", "action": "Approach State Legal Services Authority" }
+  ],
+  "tips_and_warnings": [
+    "Legal aid is free of cost",
+    "Do not pay middlemen"
+  ],
+  "official_references": ["https://nalsa.gov.in"],
+  "disclaimer": "General legal information only."
+}

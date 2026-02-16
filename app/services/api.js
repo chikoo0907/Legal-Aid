@@ -73,11 +73,11 @@ export async function listVaultDocuments(userId) {
 
 export async function getDocumentsList(params = {}) {
   const { q = "", category = "" } = params;
-  const res = await api.get("/documents", { params: { q, category } });
+  const res = await api.get("/routes/documents", { params: { q, category } });
   return res.data;
 }
 
 export async function getDocumentById(id) {
-  const res = await api.get(`/documents/${id}`);
+  const res = await api.get(`/routes/documents/${id}`);
   return res.data;
 }

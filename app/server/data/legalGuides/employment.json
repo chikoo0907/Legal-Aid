@@ -1,0 +1,31 @@
+{
+  "situation_id": "employment_issue",
+  "title": "Employment and Salary Disputes",
+  "category": "Labour Law",
+  "problem_summary": "Issues related to unpaid salary, wrongful termination, or workplace disputes.",
+  "law_basics": ["Labour Laws", "Industrial Disputes Act"],
+  "step_by_step_procedure": [
+    { "step": 1, "description": "Check appointment letter and company policies." },
+    { "step": 2, "description": "Raise the issue internally with HR or employer." },
+    { "step": 3, "description": "Send a written complaint or email." },
+    { "step": 4, "description": "Approach the Labour Office if unresolved." },
+    { "step": 5, "description": "File a formal labour complaint if required." }
+  ],
+  "documents_required": [
+    { "name": "Appointment Letter", "mandatory": true },
+    { "name": "Salary Slips", "mandatory": false },
+    { "name": "Identity Proof", "mandatory": true }
+  ],
+  "where_to_go": ["Labour Office", "Labour Commissioner"],
+  "time_limits": "As early as possible",
+  "can_be_done_without_lawyer": true,
+  "escalation_path": [
+    { "condition": "No action taken", "action": "Approach Labour Commissioner" }
+  ],
+  "tips_and_warnings": [
+    "Keep copies of all communications",
+    "Do not resign under pressure"
+  ],
+  "official_references": ["https://labour.gov.in"],
+  "disclaimer": "General legal information only."
+}

@@ -1,0 +1,68 @@
+{
+  "situation_id": "cyber_crime",
+  "title": "How to Report Online Fraud or Cyber Crime",
+  "category": "Cyber Law",
+  "problem_summary": "If you face online fraud, hacking, identity theft, or cyber harassment, you can report it through the national cyber crime portal.",
+  "who_can_use": "Any person affected by cyber crime",
+  "law_basics": [
+    "Information Technology Act, 2000"
+  ],
+  "step_by_step_procedure": [
+    {
+      "step": 1,
+      "description": "Collect all evidence such as screenshots, transaction details, URLs, and communication records."
+    },
+    {
+      "step": 2,
+      "description": "Visit the National Cyber Crime Reporting Portal."
+    },
+    {
+      "step": 3,
+      "description": "Register using your mobile number and verify via OTP."
+    },
+    {
+      "step": 4,
+      "description": "Fill in the complaint form with accurate incident details."
+    },
+    {
+      "step": 5,
+      "description": "Submit the complaint and note the acknowledgement number."
+    }
+  ],
+  "documents_required": [
+    {
+      "name": "Identity Proof",
+      "mandatory": true
+    },
+    {
+      "name": "Transaction Proof",
+      "mandatory": false,
+      "examples": ["Bank statement", "UPI screenshot"]
+    },
+    {
+      "name": "Digital Evidence",
+      "mandatory": false
+    }
+  ],
+  "where_to_go": [
+    "https://www.cybercrime.gov.in",
+    "Nearest Police Station (if required)"
+  ],
+  "time_limits": "Report as early as possible, preferably within 24–48 hours",
+  "can_be_done_without_lawyer": true,
+  "escalation_path": [
+    {
+      "condition": "No action taken",
+      "action": "Visit local police station with complaint reference number"
+    }
+  ],
+  "tips_and_warnings": [
+    "Do not delete messages or transaction records",
+    "Never share OTP or passwords",
+    "Avoid contacting fraudsters again"
+  ],
+  "official_references": [
+    "https://www.cybercrime.gov.in"
+  ],
+  "disclaimer": "This is general legal information and not legal advice."
+}

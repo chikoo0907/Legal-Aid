@@ -1,0 +1,70 @@
+{
+  "situation_id": "fir_police_complaint",
+  "title": "How to File an FIR or Police Complaint",
+  "category": "Criminal Procedure",
+  "problem_summary": "If a crime has occurred, you can file a First Information Report (FIR) or a police complaint at a police station or through online portals.",
+  "who_can_use": "Any person who has knowledge of a cognizable offence",
+  "law_basics": [
+    "Code of Criminal Procedure (CrPC)"
+  ],
+  "step_by_step_procedure": [
+    {
+      "step": 1,
+      "description": "Visit the nearest police station or access the state police online FIR portal."
+    },
+    {
+      "step": 2,
+      "description": "Clearly explain the incident to the police officer, including date, time, place, and persons involved."
+    },
+    {
+      "step": 3,
+      "description": "Provide a written complaint or dictate the complaint to the police officer."
+    },
+    {
+      "step": 4,
+      "description": "Ensure the police records the information correctly and registers the FIR if the offence is cognizable."
+    },
+    {
+      "step": 5,
+      "description": "Collect a copy of the FIR with the FIR number for future reference."
+    }
+  ],
+  "documents_required": [
+    {
+      "name": "Identity Proof",
+      "mandatory": true,
+      "examples": ["Aadhaar Card", "PAN Card", "Passport"]
+    },
+    {
+      "name": "Written Complaint",
+      "mandatory": false
+    },
+    {
+      "name": "Supporting Evidence",
+      "mandatory": false,
+      "examples": ["Photos", "Videos", "Messages", "Witness details"]
+    }
+  ],
+  "where_to_go": [
+    "Nearest Police Station",
+    "State Police Online FIR Portal"
+  ],
+  "time_limits": "As soon as possible after the incident",
+  "can_be_done_without_lawyer": true,
+  "escalation_path": [
+    {
+      "condition": "Police refuse to register FIR",
+      "action": "Approach Superintendent of Police or file complaint before Magistrate"
+    }
+  ],
+  "tips_and_warnings": [
+    "Do not give false information",
+    "Always collect a copy of the FIR",
+    "Ensure details are accurate before signing"
+  ],
+  "official_references": [
+    "https://www.indiacode.nic.in",
+    "https://mahapolice.gov.in"
+  ],
+  "disclaimer": "This is general legal information and not legal advice."
+}
