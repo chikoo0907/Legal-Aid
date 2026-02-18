@@ -24,6 +24,10 @@ export default function Chat({ route, navigation }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const [recording, setRecording] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+
   const flatListRef = useRef(null);
   const { user, setUser } = useAuth();
   const routeUser = route?.params?.user;
@@ -64,6 +68,114 @@ export default function Chat({ route, navigation }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const sendAudioToBackend = async (uri) => {
+    try {
+      // console.log("Sending audio to backend...");
+
+      const formData = new FormData();
+      formData.append("audio", {
+        uri: uri,
+        type: "audio/m4a",
+        name: "recording.m4a",
+      });
+
+      const baseUrl = getApiBaseUrl();
+      console.log("BASE URL:", baseUrl);
+
+      const response = await fetch(`${baseUrl}/speech-to-text`, {
+        method: "POST",
+        // headers: {
+        //   "Content-Type": "application/json",
+        // },
+        body: formData, //JSON.stringify({ audio: base64Audio }),
+      });
+      // console.log("Response received from backend");
+      const data = await response.json();
+      console.log("Backend response:", data);
+
+      if (!data.text) return;
+
+      if (data.text) {
+        const transcribedText = data.text.trim();
+
+        // Directly send the message without relying on state
+        setMessages((prev) => [
+          ...prev,
+          { id: Date.now().toString(), text: transcribedText, isUser: true },
+        ]);
+
+        setLoading(true);
+
+        try {
+          const reply = await sendPrompt(transcribedText, language);
+
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: Date.now().toString() + "-bot",
+              text: reply,
+              isUser: false,
+            },
+          ]);
+        } catch (e) {
+          console.log("Chat error:", e);
+        } finally {
+          setLoading(false);
+        }
+      }
+
+    } catch (error) {
+      console.log("Send audio error:", error);
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      await Audio.requestPermissionsAsync();
+
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+
+      const { recording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+
+      setRecording(recording);
+      setIsRecording(true);
+    } catch (err) {
+      console.log("Start recording error:", err);
+    }
+  };
+
+  const stopRecording = async () => {
+    try {
+      setIsRecording(false);
+      setIsTranscribing(true);
+
+      await recording.stopAndUnloadAsync();
+
+      const uri = recording.getURI();
+      console.log("Recording URI:", uri);
+
+      // const base64 = await FileSystem.readAsStringAsync(uri, {
+      //   encoding: "base64",
+      // });
+
+      console.log("Audio captured successfully");
+
+      await sendAudioToBackend(uri);
+
+      setRecording(null);
+    } catch (err) {
+      console.log("Stop recording error:", err);
+    }
+    finally {
+    setIsTranscribing(false);
+  }
   };
 
   return (
@@ -119,6 +231,7 @@ export default function Chat({ route, navigation }) {
               </View>
             )
           }
+
           ListEmptyComponent={
             <View style={styles.emptyState}>
               <Text style={styles.emptyText}>

@@ -98,6 +98,7 @@ export async function renameVaultDocument(id, name, category) {
 export async function getDocumentsList(params = {}) {
   const { q = "", category = "" } = params;
   const res = await api.get("/documents", { params: { q, category } });
+  const res = await api.get("/documents", { params: { q, category } });
   return res.data;
 }
 
