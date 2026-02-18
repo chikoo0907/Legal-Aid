@@ -29,7 +29,9 @@
       "bundler": "metro"
     },
     "plugins": [
-      "expo-video"
+      "expo-video",
+      "expo-audio",
+      "expo-speech-recognition"
     ]
   }
 }

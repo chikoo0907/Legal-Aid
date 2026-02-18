@@ -26,6 +26,10 @@ export default function Chat({ route, navigation }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const [recording, setRecording] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+
   const flatListRef = useRef(null);
   const { user, setUser } = useAuth();
   const routeUser = route?.params?.user;
@@ -61,9 +65,119 @@ export default function Chat({ route, navigation }) {
         ...prev,
         { id: Date.now().toString() + "-bot", text: reply, isUser: false },
       ]);
+    } catch (e) {
+      setError("Something went wrong");
     } finally {
       setLoading(false);
     }
+  };
+
+  const sendAudioToBackend = async (uri) => {
+    try {
+      // console.log("Sending audio to backend...");
+
+      const formData = new FormData();
+      formData.append("audio", {
+        uri: uri,
+        type: "audio/m4a",
+        name: "recording.m4a",
+      });
+
+      const baseUrl = getApiBaseUrl();
+      console.log("BASE URL:", baseUrl);
+
+      const response = await fetch(`${baseUrl}/speech-to-text`, {
+        method: "POST",
+        // headers: {
+        //   "Content-Type": "application/json",
+        // },
+        body: formData, //JSON.stringify({ audio: base64Audio }),
+      });
+      // console.log("Response received from backend");
+      const data = await response.json();
+      console.log("Backend response:", data);
+
+      if (!data.text) return;
+
+      if (data.text) {
+        const transcribedText = data.text.trim();
+
+        // Directly send the message without relying on state
+        setMessages((prev) => [
+          ...prev,
+          { id: Date.now().toString(), text: transcribedText, isUser: true },
+        ]);
+
+        setLoading(true);
+
+        try {
+          const reply = await sendPrompt(transcribedText, language);
+
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: Date.now().toString() + "-bot",
+              text: reply,
+              isUser: false,
+            },
+          ]);
+        } catch (e) {
+          console.log("Chat error:", e);
+        } finally {
+          setLoading(false);
+        }
+      }
+
+    } catch (error) {
+      console.log("Send audio error:", error);
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      await Audio.requestPermissionsAsync();
+
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+
+      const { recording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+
+      setRecording(recording);
+      setIsRecording(true);
+    } catch (err) {
+      console.log("Start recording error:", err);
+    }
+  };
+
+  const stopRecording = async () => {
+    try {
+      setIsRecording(false);
+      setIsTranscribing(true);
+
+      await recording.stopAndUnloadAsync();
+
+      const uri = recording.getURI();
+      console.log("Recording URI:", uri);
+
+      // const base64 = await FileSystem.readAsStringAsync(uri, {
+      //   encoding: "base64",
+      // });
+
+      console.log("Audio captured successfully");
+
+      await sendAudioToBackend(uri);
+
+      setRecording(null);
+    } catch (err) {
+      console.log("Stop recording error:", err);
+    }
+    finally {
+    setIsTranscribing(false);
+  }
   };
 
   return (
@@ -127,10 +241,12 @@ export default function Chat({ route, navigation }) {
                   <Text className="text-[#0d121b] text-sm leading-relaxed">
                     {item.text}
                   </Text>
+                  <VoiceOutput text={item.text} language={language} />
                 </View>
               </View>
             )
           }
+
           ListEmptyComponent={
             <View className="items-center mt-16">
               <Text className="text-sm text-gray-500">
@@ -155,6 +271,7 @@ export default function Chat({ route, navigation }) {
         {/* ---------- INPUT AREA ---------- */}
         <View className="border-t border-gray-200 bg-white px-4 pt-3 pb-6">
           <View className="flex-row items-center gap-2">
+            
             <View className="flex-1 relative">
               <TextInput
                 value={input}
@@ -163,21 +280,52 @@ export default function Chat({ route, navigation }) {
                 className="bg-gray-100 rounded-2xl px-4 py-3 pr-10 text-sm"
                 multiline
               />
-              <TouchableOpacity
-                onPress={ask}
-                disabled={!canSend}
-                className="absolute right-3 top-1/2 -translate-y-1/2"
-              >
-                <MaterialIcons
-                  name="send"
-                  size={20}
-                  color={canSend ? "#1152d4" : "#9ca3af"}
-                />
-              </TouchableOpacity>
-            </View>
 
-            <VoiceOutput text={messages[messages.length - 1]?.text || ""} language={language} />
-          </View>
+               {/* SEND BUTTON */}
+                <TouchableOpacity
+                  onPress={ask}
+                  disabled={!canSend}
+                  className="absolute right-3 top-1/2 -translate-y-1/2"
+                >
+                  <MaterialIcons
+                    name="send"
+                    size={20}
+                    color={canSend ? "#1152d4" : "#9ca3af"}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {/* 🎤 MIC BUTTON CLEANLY PLACED */}
+              {/* <VoiceInput onResult={(text) => setInput(text)} /> */}
+              <View className="items-center ml-2">
+                {isRecording ? (
+                  <View className="items-center">
+                    <View className="w-3 h-3 bg-red-600 rounded-full mb-1" />
+                    <TouchableOpacity
+                      onPress={stopRecording}
+                      className="bg-red-600 p-3 rounded-full"
+                    >
+                      <MaterialIcons name="stop" size={24} color="white" />
+                    </TouchableOpacity>
+                    <Text className="text-xs text-red-600 mt-1">Recording</Text>
+                  </View>
+                ) : isTranscribing ? (
+                  <View className="items-center">
+                    <ActivityIndicator size="small" color="#1152d4" />
+                    <Text className="text-xs text-gray-500 mt-1">
+                      Transcribing...
+                    </Text>
+                  </View>
+                ) : (
+                  <TouchableOpacity
+                    onPress={startRecording}
+                    className="bg-[#1152d4] p-3 rounded-full"
+                  >
+                    <MaterialIcons name="mic" size={24} color="white" />
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
 
           <Text className="text-[10px] text-center text-gray-400 mt-3">
             NyayaSahayak provides legal information, not legal advice.
