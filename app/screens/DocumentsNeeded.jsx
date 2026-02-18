@@ -2,12 +2,12 @@ import { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
+  StyleSheet,
   TouchableOpacity,
   FlatList,
   TextInput,
   ActivityIndicator,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { getDocumentsList } from "../services/api";
 import { MaterialIcons } from "@expo/vector-icons";
 
@@ -45,18 +45,10 @@ export default function DocumentsNeeded({ navigation, route }) {
   const load = useCallback(async (q = "", cat = "") => {
     setLoading(true);
     setError(null);
-
     try {
       const data = await getDocumentsList({ q, category: cat });
-
-      const items = Array.isArray(data) ? data : data.items || [];
-      const categories = data.categories || [];
-
-      setCategories(categories);
-      setItems(items);
-
-      console.log("Documents API response:", data);
-
+      setCategories(data.categories || []);
+      setItems(data.items || []);
     } catch (e) {
       setError(e.message || "Failed to load.");
       setItems([]);
@@ -78,18 +70,10 @@ export default function DocumentsNeeded({ navigation, route }) {
 
     return (
       <TouchableOpacity
+        style={[styles.chip, active && styles.chipActive]}
         onPress={() => setCategoryId(active ? "" : item.id)}
-        className={`h-9 px-5 rounded-full mr-2 ${
-          active
-            ? "bg-[#1152d4]"
-            : "bg-white border border-slate-200"
-        }`}
       >
-        <Text
-          className={`text-sm font-medium ${
-            active ? "text-white" : "text-slate-600"
-          }`}
-        >
+        <Text style={[styles.chipText, active && styles.chipTextActive]}>
           {label}
         </Text>
       </TouchableOpacity>
@@ -101,31 +85,23 @@ export default function DocumentsNeeded({ navigation, route }) {
 
     return (
       <TouchableOpacity
-        activeOpacity={0.7}
+        activeOpacity={0.8}
+        style={[styles.card, isSelected && styles.cardSelected]}
         onPress={() => setSelected(isSelected ? null : item)}
-        className={`rounded-xl mb-4 overflow-hidden ${
-          isSelected
-            ? "bg-white border-l-4 border-[#1152d4] shadow-md"
-            : "bg-white border border-slate-200"
-        }`}
       >
         {/* Header */}
-        <View className="p-4 flex-row justify-between items-center">
-          <View className="flex-row items-center gap-3">
-            <View className="bg-blue-100 p-2 rounded-lg">
-              <Text className="text-[#1152d4] font-bold">📄</Text>
-            </View>
-            <View>
-              <Text className="text-slate-900 font-bold text-base">
-                {item.titleEn}
-              </Text>
-              {item.subtitle && (
-                <Text className="text-xs text-slate-500">
-                  {item.subtitle}
-                </Text>
-              )}
-            </View>
+        <View style={styles.cardHeader}>
+          <View style={styles.iconBox}>
+            <Text style={styles.icon}>📄</Text>
           </View>
+
+          <View style={{ flex: 1 }}>
+            <Text style={styles.cardTitle}>{item.titleEn}</Text>
+            {item.subtitle && (
+              <Text style={styles.cardSubtitle}>{item.subtitle}</Text>
+            )}
+          </View>
+
           <MaterialIcons
             name={isSelected ? "expand-less" : "expand-more"}
             size={24}
@@ -135,38 +111,28 @@ export default function DocumentsNeeded({ navigation, route }) {
 
         {/* Expanded Content */}
         {isSelected && (
-          <View className="px-4 pb-5">
-            <View className="h-px bg-slate-200 mb-4" />
+          <View style={styles.detail}>
+            <View style={styles.divider} />
 
-            {/* Documents */}
-            <Text className="text-[#1152d4] font-bold text-sm mb-3">
-              {t.documents}
-            </Text>
+            <Text style={styles.sectionTitle}>{t.documents}</Text>
 
             {(item.documents || []).map((doc, i) => (
-              <View key={i} className="flex-row items-start mb-2 gap-2">
-                <Text className="text-[#1152d4] mt-0.5">✔</Text>
-                <Text className="text-sm text-slate-700 flex-1">
-                  {doc}
-                </Text>
+              <View key={i} style={styles.row}>
+                <Text style={styles.check}>✔</Text>
+                <Text style={styles.text}>{doc}</Text>
               </View>
             ))}
 
-            {/* Steps */}
-            <Text className="text-[#1152d4] font-bold text-sm mt-5 mb-3">
+            <Text style={[styles.sectionTitle, { marginTop: 16 }]}>
               {t.steps}
             </Text>
 
             {(item.steps || []).map((step, i) => (
-              <View key={i} className="flex-row gap-3 mb-3">
-                <View className="h-6 w-6 rounded-full bg-[#1152d4] items-center justify-center">
-                  <Text className="text-white text-xs font-bold">
-                    {i + 1}
-                  </Text>
+              <View key={i} style={styles.stepRow}>
+                <View style={styles.stepCircle}>
+                  <Text style={styles.stepNumber}>{i + 1}</Text>
                 </View>
-                <Text className="text-sm text-slate-700 flex-1">
-                  {step}
-                </Text>
+                <Text style={styles.text}>{step}</Text>
               </View>
             ))}
           </View>
@@ -175,62 +141,49 @@ export default function DocumentsNeeded({ navigation, route }) {
     );
   };
 
-
   return (
-    <SafeAreaView className="flex-1 bg-[#f6f6f8]">
+    <View style={styles.container}>
       {/* Header */}
-      <View className="bg-[#f6f6f8]/90 backdrop-blur px-4 py-4">
-        <View className="flex-row items-center">
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <MaterialIcons name="arrow-back-ios" size={20} color="#0d121b" />
-          </TouchableOpacity>
-          <View>
-            <Text className="text-xl font-bold text-slate-900">
-              {t.title}
-            </Text>
-            <Text className="text-xs uppercase tracking-wider text-[#1152d4]/70">
-              {t.subtitle}
-            </Text>
-          </View>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <MaterialIcons name="arrow-back-ios" size={20} color="#0d121b" />
+        </TouchableOpacity>
+
+        <View style={{ marginLeft: 10 }}>
+          <Text style={styles.title}>{t.title}</Text>
+          <Text style={styles.subtitle}>{t.subtitle}</Text>
         </View>
       </View>
 
       {/* Search */}
-      <View className="px-4 pb-4">
-        <View className="relative">
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            onSubmitEditing={onSearch}
-            placeholder={t.search}
-            placeholderTextColor="#94A3B8"
-            className="bg-white h-12 rounded-xl pl-4 pr-4 text-base shadow-sm"
-          />
-        </View>
-      </View>
-
-      {/* Categories */}
-      <View className="px-4 pb-4">
-        <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={[
-            { id: "", labelEn: t.all, labelHi: t.all }, 
-            ...categories
-          ]}
-          // data={categories}
-          keyExtractor={(item) => item.id || "all"}
-          renderItem={renderCategory}
+      <View style={styles.searchWrap}>
+        <TextInput
+          style={styles.input}
+          placeholder={t.search}
+          placeholderTextColor="#94A3B8"
+          value={query}
+          onChangeText={setQuery}
+          onSubmitEditing={onSearch}
         />
       </View>
 
+      {/* Categories */}
+      <FlatList
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        data={[{ id: "", labelEn: t.all, labelHi: t.all }, ...categories]}
+        keyExtractor={(item) => item.id || "all"}
+        renderItem={renderCategory}
+        contentContainerStyle={styles.chips}
+      />
+
       {/* Content */}
       {error ? (
-        <View className="flex-1 items-center justify-center px-6">
-          <Text className="text-red-600 text-center">{error}</Text>
+        <View style={styles.centered}>
+          <Text style={styles.errorText}>{error}</Text>
         </View>
       ) : loading && items.length === 0 ? (
-        <View className="flex-1 items-center justify-center">
+        <View style={styles.centered}>
           <ActivityIndicator size="large" color="#1152d4" />
         </View>
       ) : (
@@ -240,14 +193,201 @@ export default function DocumentsNeeded({ navigation, route }) {
             item.id || item._id || String(index)
           }
           renderItem={renderItem}
-          contentContainerClassName="px-4 pb-24"
+          contentContainerStyle={styles.list}
           ListEmptyComponent={
-            <View className="items-center py-20">
-              <Text className="text-slate-400">No matches found</Text>
+            <View style={styles.centered}>
+              <Text style={styles.muted}>No matches found</Text>
             </View>
           }
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#F6F6F8" },
+
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: 50,
+    paddingBottom: 16,
+    backgroundColor: "#F6F6F8",
+  },
+
+  title: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#0F172A",
+  },
+
+  subtitle: {
+    fontSize: 12,
+    color: "#1152d4",
+    textTransform: "uppercase",
+    marginTop: 2,
+  },
+
+  searchWrap: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+
+  input: {
+    backgroundColor: "#FFF",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    height: 48,
+    fontSize: 16,
+    elevation: 2,
+  },
+
+  chips: {
+    paddingHorizontal: 12,
+    paddingBottom: 12,
+  },
+
+  chip: {
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: "#FFF",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    marginRight: 8,
+  },
+
+  chipActive: {
+    backgroundColor: "#1152d4",
+  },
+
+  chipText: {
+    color: "#64748B",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+
+  chipTextActive: {
+    color: "#FFF",
+  },
+
+  list: {
+    paddingHorizontal: 16,
+    paddingBottom: 30,
+  },
+
+  card: {
+    backgroundColor: "#FFF",
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+  },
+
+  cardSelected: {
+    borderLeftWidth: 4,
+    borderLeftColor: "#1152d4",
+  },
+
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  iconBox: {
+    backgroundColor: "#DBEAFE",
+    padding: 8,
+    borderRadius: 10,
+    marginRight: 10,
+  },
+
+  icon: {
+    fontSize: 16,
+    color: "#1152d4",
+  },
+
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#0F172A",
+  },
+
+  cardSubtitle: {
+    fontSize: 12,
+    color: "#94A3B8",
+    marginTop: 2,
+  },
+
+  detail: {
+    marginTop: 12,
+  },
+
+  divider: {
+    height: 1,
+    backgroundColor: "#E2E8F0",
+    marginBottom: 12,
+  },
+
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#1152d4",
+    marginBottom: 8,
+  },
+
+  row: {
+    flexDirection: "row",
+    marginBottom: 6,
+  },
+
+  check: {
+    color: "#1152d4",
+    marginRight: 6,
+  },
+
+  text: {
+    flex: 1,
+    fontSize: 14,
+    color: "#475569",
+  },
+
+  stepRow: {
+    flexDirection: "row",
+    marginBottom: 8,
+  },
+
+  stepCircle: {
+    height: 22,
+    width: 22,
+    borderRadius: 11,
+    backgroundColor: "#1152d4",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 8,
+  },
+
+  stepNumber: {
+    color: "#FFF",
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+
+  errorText: {
+    color: "#DC2626",
+    textAlign: "center",
+  },
+
+  muted: {
+    color: "#94A3B8",
+  },
+});

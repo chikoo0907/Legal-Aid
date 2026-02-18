@@ -108,8 +108,7 @@ export default function Profile({ navigation }) {
 
             <InfoItem label="Full Name" value={user.name} />
             <InfoItem label="Phone Number" value={user.phone} />
-            <InfoItem label="Email Address" value={user.email} />
-            <InfoItem label="Date of Birth" value={user.dob} isLast />
+            <InfoItem label="Email Address" value={user.email} isLast />
 
           </View>
         </View>
@@ -129,10 +128,6 @@ export default function Profile({ navigation }) {
               Logout
             </Text>
           </TouchableOpacity>
-
-          <Text className="text-center text-slate-300 text-xs mt-8">
-            NyayaSahayak v2.1.0
-          </Text>
         </View>
 
       </ScrollView>

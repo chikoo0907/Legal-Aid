@@ -8,15 +8,13 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  StyleSheet,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LanguageSelector from "../components/LanguageSelector";
-
 import { sendPrompt } from "../services/api";
 import { useAuth } from "../context/AuthContext";
-import VoiceInput from "../components/VoiceInput";
 import VoiceOutput from "../components/VoiceOutput";
 
 export default function Chat({ route, navigation }) {
@@ -61,35 +59,33 @@ export default function Chat({ route, navigation }) {
         ...prev,
         { id: Date.now().toString() + "-bot", text: reply, isUser: false },
       ]);
+    } catch (e) {
+      setError("Something went wrong.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#f6f6f8]">
+    <View style={styles.container}>
       {/* ---------- HEADER ---------- */}
-      <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
-        <View className="flex-row items-center gap-3">
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <MaterialIcons name="arrow-back-ios" size={20} color="#0d121b" />
           </TouchableOpacity>
 
-          <View>
-            <Text className="text-base font-bold text-[#0d121b]">
-              {user.email}
-            </Text>
-            <View className="flex-row items-center gap-1">
-              <View className="w-2 h-2 rounded-full bg-green-500" />
-              <Text className="text-xs text-gray-500">Online</Text>
+          <View style={{ marginLeft: 10 }}>
+            <Text style={styles.userEmail}>{user?.email}</Text>
+            <View style={styles.onlineRow}>
+              <View style={styles.onlineDot} />
+              <Text style={styles.onlineText}>Online</Text>
             </View>
           </View>
         </View>
 
-        <View className="px-3 py-1 rounded-full bg-gray-100">
-          <Text className="text-xs font-bold text-[#1152d4]">
-            {language}
-          </Text>
+        <View style={styles.langBadge}>
+          <Text style={styles.langText}>{language}</Text>
         </View>
       </View>
 
@@ -98,45 +94,37 @@ export default function Chat({ route, navigation }) {
 
       {/* ---------- CHAT AREA ---------- */}
       <KeyboardAvoidingView
-        className="flex-1"
+        style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <FlatList
           ref={flatListRef}
           data={messages}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ padding: 16 }}
+          contentContainerStyle={styles.chatContent}
           renderItem={({ item }) =>
             item.isUser ? (
-              /* USER MESSAGE */
-              <View className="items-end mb-4">
-                <Text className="text-[11px] text-gray-400 mb-1">You</Text>
-                <View className="bg-[#1152d4] px-4 py-3 rounded-xl rounded-br-none max-w-[80%]">
-                  <Text className="text-white text-sm leading-relaxed">
-                    {item.text}
-                  </Text>
+              <View style={styles.userWrapper}>
+                <Text style={styles.senderLabel}>You</Text>
+                <View style={styles.userBubble}>
+                  <Text style={styles.userText}>{item.text}</Text>
                 </View>
               </View>
             ) : (
-              /* BOT MESSAGE */
-              <View className="items-start mb-4">
-                <Text className="text-[11px] text-gray-400 mb-1">
-                  NyayaSahayak
-                </Text>
-                <View className="bg-white border border-gray-200 px-4 py-3 rounded-xl rounded-bl-none max-w-[80%]">
-                  <Text className="text-[#0d121b] text-sm leading-relaxed">
-                    {item.text}
-                  </Text>
+              <View style={styles.botWrapper}>
+                <Text style={styles.senderLabel}>NyayaSahayak</Text>
+                <View style={styles.botBubble}>
+                  <Text style={styles.botText}>{item.text}</Text>
                 </View>
               </View>
             )
           }
           ListEmptyComponent={
-            <View className="items-center mt-16">
-              <Text className="text-sm text-gray-500">
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>
                 Ask me about your legal rights 🇮🇳
               </Text>
-              <Text className="text-sm text-gray-500">
+              <Text style={styles.emptyText}>
                 Send Hi to start chatting
               </Text>
             </View>
@@ -144,29 +132,29 @@ export default function Chat({ route, navigation }) {
         />
 
         {loading && (
-          <View className="flex-row items-center px-4 pb-2 gap-2">
+          <View style={styles.loadingRow}>
             <ActivityIndicator size="small" color="#1152d4" />
-            <Text className="text-gray-500 text-sm">Thinking…</Text>
+            <Text style={styles.loadingText}>Thinking…</Text>
           </View>
         )}
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
         {/* ---------- INPUT AREA ---------- */}
-        <View className="border-t border-gray-200 bg-white px-4 pt-3 pb-6">
-          <View className="flex-row items-center gap-2">
-            <View className="flex-1 relative">
+        <View style={styles.inputContainer}>
+          <View style={styles.inputRow}>
+            <View style={{ flex: 1 }}>
               <TextInput
                 value={input}
                 onChangeText={setInput}
                 placeholder="Ask about your rights..."
-                className="bg-gray-100 rounded-2xl px-4 py-3 pr-10 text-sm"
+                style={styles.input}
                 multiline
               />
               <TouchableOpacity
                 onPress={ask}
                 disabled={!canSend}
-                className="absolute right-3 top-1/2 -translate-y-1/2"
+                style={styles.sendBtn}
               >
                 <MaterialIcons
                   name="send"
@@ -176,14 +164,193 @@ export default function Chat({ route, navigation }) {
               </TouchableOpacity>
             </View>
 
-            <VoiceOutput text={messages[messages.length - 1]?.text || ""} language={language} />
+            <VoiceOutput
+              text={messages[messages.length - 1]?.text || ""}
+              language={language}
+            />
           </View>
 
-          <Text className="text-[10px] text-center text-gray-400 mt-3">
+          <Text style={styles.disclaimer}>
             NyayaSahayak provides legal information, not legal advice.
           </Text>
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#F6F6F8" },
+
+  header: {
+    paddingTop: 50,
+    paddingHorizontal: 16,
+    paddingBottom: 14,
+    backgroundColor: "#FFF",
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  userEmail: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#0d121b",
+  },
+
+  onlineRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 3,
+  },
+
+  onlineDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#22C55E",
+    marginRight: 5,
+  },
+
+  onlineText: {
+    fontSize: 11,
+    color: "#6B7280",
+  },
+
+  langBadge: {
+    backgroundColor: "#F3F4F6",
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 20,
+  },
+
+  langText: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: "#1152d4",
+  },
+
+  chatContent: {
+    padding: 16,
+    paddingBottom: 30,
+  },
+
+  userWrapper: {
+    alignItems: "flex-end",
+    marginBottom: 16,
+  },
+
+  botWrapper: {
+    alignItems: "flex-start",
+    marginBottom: 16,
+  },
+
+  senderLabel: {
+    fontSize: 11,
+    color: "#9CA3AF",
+    marginBottom: 4,
+  },
+
+  userBubble: {
+    backgroundColor: "#1152d4",
+    padding: 12,
+    borderRadius: 14,
+    borderBottomRightRadius: 4,
+    maxWidth: "80%",
+  },
+
+  botBubble: {
+    backgroundColor: "#FFF",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    padding: 12,
+    borderRadius: 14,
+    borderBottomLeftRadius: 4,
+    maxWidth: "80%",
+  },
+
+  userText: {
+    color: "#FFF",
+    fontSize: 14,
+    lineHeight: 20,
+  },
+
+  botText: {
+    color: "#0d121b",
+    fontSize: 14,
+    lineHeight: 20,
+  },
+
+  emptyState: {
+    alignItems: "center",
+    marginTop: 60,
+  },
+
+  emptyText: {
+    fontSize: 14,
+    color: "#6B7280",
+  },
+
+  loadingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingBottom: 6,
+  },
+
+  loadingText: {
+    marginLeft: 8,
+    fontSize: 13,
+    color: "#6B7280",
+  },
+
+  inputContainer: {
+    borderTopWidth: 1,
+    borderTopColor: "#E5E7EB",
+    backgroundColor: "#FFF",
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 20,
+  },
+
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  input: {
+    backgroundColor: "#F3F4F6",
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    paddingRight: 40,
+    fontSize: 14,
+    minHeight: 42,
+  },
+
+  sendBtn: {
+    position: "absolute",
+    right: 12,
+    top: 12,
+  },
+
+  disclaimer: {
+    fontSize: 10,
+    textAlign: "center",
+    color: "#9CA3AF",
+    marginTop: 10,
+  },
+
+  error: {
+    color: "red",
+    textAlign: "center",
+    marginVertical: 6,
+  },
+});

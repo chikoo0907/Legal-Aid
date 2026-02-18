@@ -56,13 +56,27 @@ export async function login(email, password) {
   return res.data;
 }
 
-export async function register(email, password) {
-  const res = await api.post(`/auth/register`, { email, password });
+export async function register(data) {
+  // ✅ Send full object (name, email, phone, password)
+  const res = await api.post(`/auth/register`, data);
   return res.data;
 }
 
-export async function uploadVaultDocument({ userId, name, type, uri }) {
-  const res = await api.post(`/vault/upload`, { userId, name, type, uri });
+export async function uploadVaultDocument({ userId, uri, name, type, folderId }) {
+  const formData = new FormData();
+  formData.append("userId", userId);
+  if (folderId) formData.append("folderId", folderId);
+  formData.append("file", {
+    uri,
+    name,
+    type: type || "application/octet-stream",
+  });
+
+  const res = await api.post(`/vault/upload`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
   return res.data;
 }
 
@@ -71,13 +85,23 @@ export async function listVaultDocuments(userId) {
   return res.data;
 }
 
+export async function deleteVaultDocument(id) {
+  const res = await api.delete(`/vault/${id}`);
+  return res.data;
+}
+
+export async function renameVaultDocument(id, name, category) {
+  const res = await api.patch(`/vault/${id}`, { name, category });
+  return res.data;
+}
+
 export async function getDocumentsList(params = {}) {
   const { q = "", category = "" } = params;
-  const res = await api.get("/routes/documents", { params: { q, category } });
+  const res = await api.get("/documents", { params: { q, category } });
   return res.data;
 }
 
 export async function getDocumentById(id) {
-  const res = await api.get(`/routes/documents/${id}`);
+  const res = await api.get(`/documents${id}`);
   return res.data;
 }

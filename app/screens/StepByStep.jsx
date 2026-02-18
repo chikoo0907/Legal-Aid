@@ -1,5 +1,4 @@
 import { View, Text, FlatList, TouchableOpacity, TextInput } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { getStepCategories } from "../server/data/legalGuides/adapter";
 
@@ -8,16 +7,15 @@ export default function StepByStep({ navigation }) {
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
-      activeOpacity={0.8}
       onPress={() => navigation.navigate("StepDetails", { category: item })}
       className="px-4 py-2"
     >
-      <View className="flex-row items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+      <View className="flex-row items-center bg-white p-4 rounded-xl border border-slate-200">
         <View className={`h-14 w-14 rounded-lg items-center justify-center ${item.color}`}>
-          <MaterialIcons name={item.icon} size={28} />
+          <MaterialIcons name={item.icon} size={26} />
         </View>
 
-        <View className="flex-1">
+        <View className="flex-1 ml-4">
           <Text className="text-base font-bold text-slate-900">
             {item.title}
           </Text>
@@ -32,10 +30,11 @@ export default function StepByStep({ navigation }) {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-[#f6f6f8]">
+    <View className="flex-1 bg-slate-50">
+
       {/* Header */}
-      <View className="px-4 py-4">
-        <View className="flex-row">
+      <View className="px-4 pt-14 pb-4 bg-white border-b border-slate-200">
+        <View className="flex-row items-center gap-3">
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <MaterialIcons name="arrow-back-ios" size={20} />
           </TouchableOpacity>
@@ -44,26 +43,26 @@ export default function StepByStep({ navigation }) {
           </Text>
         </View>
         <Text className="text-sm text-slate-500 mt-1">
-          Select a category to see simple guides
+          Select a category to view simple guides
         </Text>
       </View>
 
       {/* Search */}
-      <View className="px-4 pb-4">
+      <View className="px-4 py-4">
         <TextInput
           placeholder="Search legal categories"
           placeholderTextColor="#94A3B8"
-          className="bg-white h-12 rounded-xl px-4 shadow-sm"
+          className="bg-white h-12 rounded-xl px-4 border border-slate-200"
         />
       </View>
 
-      {/* Categories */}
+      {/* List */}
       <FlatList
         data={STEP_CATEGORIES}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
-        contentContainerClassName="pb-5"
+        contentContainerStyle={{ paddingBottom: 20 }}
       />
-    </SafeAreaView>
+    </View>
   );
 }

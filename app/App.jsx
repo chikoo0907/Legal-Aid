@@ -2,6 +2,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { View, ActivityIndicator } from "react-native";
 import "./../global.css"
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import Splash from "./screens/Splash";
 import Login from "./screens/Login";
@@ -9,6 +10,7 @@ import Register from "./screens/Register";
 import Home from "./screens/Home";
 import Chat from "./screens/Chat";
 import Vault from "./screens/Vault";
+import DocumentViewer from "./screens/DocumentViewer";
 import KnowRights from "./screens/KnowRights";
 import Awareness from "./screens/Awareness";
 import DocumentsNeeded from "./screens/DocumentsNeeded";
@@ -35,6 +37,7 @@ function AppContent() {
   }
 
   return (
+     <NavigationContainer>
     <Stack.Navigator
       initialRouteName="Splash"
       screenOptions={{ headerShown: false }}
@@ -51,18 +54,25 @@ function AppContent() {
       <Stack.Screen name="Awareness" component={Awareness} />
       <Stack.Screen name="DocumentsNeeded" component={DocumentsNeeded} />
       <Stack.Screen name="Vault" component={Vault} />
+      <Stack.Screen
+        name="DocumentViewer"
+        component={DocumentViewer}
+        options={{ headerShown: true, title: "Document" }}
+      />
       <Stack.Screen name="StepByStep" component={StepByStep} />
       <Stack.Screen name="StepDetails" component={StepDetails} />
     </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 
 export default function App() {
   return (
-    <NavigationContainer>
+    <SafeAreaProvider>   
       <AuthProvider>
         <AppContent />
       </AuthProvider>
-    </NavigationContainer>
+      </SafeAreaProvider>
+    
   );
 }

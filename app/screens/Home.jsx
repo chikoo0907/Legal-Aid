@@ -1,5 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
 
@@ -24,6 +23,7 @@ const translations = {
     awareness: "जागरूकता",
     vault: "दस्तावेज़ तिजोरी",
     documentsNeeded: "आवश्यक दस्तावेज़",
+    stepbystep: "स्टेप बाय स्टेप मदद"
   },
 };
 
@@ -33,86 +33,68 @@ export default function Home({ navigation, route }) {
   const t = translations[language];
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50">
+    <View style={styles.container}>
       {/* Top App Bar */}
-      <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-slate-200">
-        <View className="flex-row items-center gap-3">
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
           <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
-            <View className="w-10 h-10 rounded-full bg-blue-100 items-center justify-center">
+            <View style={styles.avatar}>
               <Ionicons name="person" size={22} color="#2563eb" />
             </View>
           </TouchableOpacity>
-          <Text className="text-lg font-bold text-slate-900">
-            {t.title}
-          </Text>
+          <Text style={styles.title}>{t.title}</Text>
         </View>
 
-        <View className="flex-row gap-3">
+        <View style={styles.headerIcons}>
           <Ionicons name="notifications-outline" size={22} color="#0f172a" />
           <Ionicons name="settings-outline" size={22} color="#0f172a" />
         </View>
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false}>
         {/* Greeting */}
-        <View className="px-4 pt-6 mb-3">
-          <Text className="text-2xl font-bold text-slate-900">
-            Namaste!!
-          </Text>
-          <Text className="text-slate-600 mt-1">
-            {t.greeting}
-          </Text>
+        <View style={styles.greetingWrap}>
+          <Text style={styles.greetingTitle}>Namaste!!</Text>
+          <Text style={styles.greetingText}>{t.greeting}</Text>
           {user && (
-            <Text className="text-xs text-blue-600 mt-1">
-              {user.email}
-            </Text>
+            <Text style={styles.email}>{user.email}</Text>
           )}
         </View>
 
-        {/* Featured Ask Card */}
-        <View className="px-4 mt-5">
-          <View className="bg-teal-600 rounded-2xl p-5 overflow-hidden">
-            <Text className="text-[10px] font-bold text-white bg-white/20 self-start px-2 py-0.5 rounded-full">
-              AI POWERED
-            </Text>
+        {/* AI Card */}
+        <View style={styles.cardWrap}>
+          <View style={styles.aiCard}>
+            <Text style={styles.aiBadge}>AI POWERED</Text>
 
-            <Text className="text-xl font-bold text-white mt-3">
-              {t.ask}
-            </Text>
+            <Text style={styles.aiTitle}>{t.ask}</Text>
 
-            <Text className="text-teal-100 text-sm mt-1">
+            <Text style={styles.aiDesc}>
               Chat with our AI to get instant legal guidance in simple language.
             </Text>
 
             <TouchableOpacity
               onPress={() => navigation.navigate("Chat", { language })}
-              className="mt-4 bg-white py-3 rounded-lg flex-row items-center justify-center gap-2"
+              style={styles.aiButton}
             >
-              <Text className="font-bold text-teal-700">
-                Start Chatting
-              </Text>
+              <Text style={styles.aiButtonText}>Start Chatting</Text>
               <Ionicons name="chatbubble-ellipses" size={18} color="#0f766e" />
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Services Grid */}
-        <View className="px-4 mt-6">
-          <Text className="text-lg font-bold text-slate-900 mb-3">
-            Explore Services
-          </Text>
+        {/* Services */}
+        <View style={styles.servicesWrap}>
+          <Text style={styles.servicesTitle}>Explore Services</Text>
 
-          <View className="flex-row flex-wrap gap-3">
-            {/* Know Your Rights */}
+          <View style={styles.grid}>
+            {/* Step By Step */}
             <TouchableOpacity
               onPress={() => navigation.navigate("StepByStep", { language })}
-              className="w-[48%] bg-indigo-600 rounded-xl p-4"
+              style={[styles.serviceCard, { backgroundColor: "#4f46e5" }]}
             >
               <MaterialCommunityIcons name="help" size={28} color="white" />
-              <Text className="text-white font-bold mt-3">
-                {t.stepbystep}
-              </Text>
-              <Text className="text-indigo-200 text-xs mt-1">
+              <Text style={styles.serviceTitle}>{t.stepbystep}</Text>
+              <Text style={styles.serviceDescLight}>
                 Simplified legal guides
               </Text>
             </TouchableOpacity>
@@ -122,13 +104,11 @@ export default function Home({ navigation, route }) {
               onPress={() =>
                 navigation.navigate("DocumentsNeeded", { language })
               }
-              className="w-[48%] bg-blue-600 rounded-xl p-4"
+              style={[styles.serviceCard, { backgroundColor: "#2563eb" }]}
             >
               <Ionicons name="document-text" size={28} color="white" />
-              <Text className="text-white font-bold mt-3">
-                {t.documentsNeeded}
-              </Text>
-              <Text className="text-blue-200 text-xs mt-1">
+              <Text style={styles.serviceTitle}>{t.documentsNeeded}</Text>
+              <Text style={styles.serviceDescLight}>
                 Required paperwork
               </Text>
             </TouchableOpacity>
@@ -136,13 +116,11 @@ export default function Home({ navigation, route }) {
             {/* Vault */}
             <TouchableOpacity
               onPress={() => navigation.navigate("Vault", { language })}
-              className="w-[48%] bg-white rounded-xl p-4 border border-slate-200"
+              style={styles.serviceCardWhite}
             >
               <Ionicons name="folder-open" size={28} color="#2563eb" />
-              <Text className="text-slate-900 font-bold mt-3">
-                {t.vault}
-              </Text>
-              <Text className="text-slate-500 text-xs mt-1">
+              <Text style={styles.serviceTitleDark}>{t.vault}</Text>
+              <Text style={styles.serviceDescDark}>
                 Secure document storage
               </Text>
             </TouchableOpacity>
@@ -150,35 +128,197 @@ export default function Home({ navigation, route }) {
             {/* Awareness */}
             <TouchableOpacity
               onPress={() => navigation.navigate("Awareness", { language })}
-              className="w-[48%] bg-white rounded-xl p-4 border border-slate-200"
+              style={styles.serviceCardWhite}
             >
               <Ionicons name="megaphone" size={28} color="#f97316" />
-              <Text className="text-slate-900 font-bold mt-3">
-                {t.awareness}
-              </Text>
-              <Text className="text-slate-500 text-xs mt-1">
+              <Text style={styles.serviceTitleDark}>{t.awareness}</Text>
+              <Text style={styles.serviceDescDark}>
                 Legal updates & news
               </Text>
             </TouchableOpacity>
-
-            {/* Step by step help */}
-            {/* <TouchableOpacity
-              onPress={() => navigation.navigate("StepByStep", { language })}
-              className="w-[48%] bg-white border border-slate-200 rounded-xl p-4"
-            >
-              <MaterialCommunityIcons name="help" size={28} color="#f97316" />
-              <Text className="text-slate-900 font-bold mt-3">
-                {t.stepbystep}
-              </Text>
-              <Text className="text-slate-500 text-xs mt-1">
-                Simplified legal guides
-              </Text>
-            </TouchableOpacity> */}
           </View>
         </View>
 
-        <View className="h-10" />
+        <View style={{ height: 30 }} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#F8FAFC",
+    paddingTop: 50,
+  },
+
+  header: {
+    backgroundColor: "#FFF",
+    borderBottomWidth: 1,
+    borderBottomColor: "#E2E8F0",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#DBEAFE",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 10,
+  },
+
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#0f172a",
+  },
+
+  headerIcons: {
+    flexDirection: "row",
+    gap: 15,
+  },
+
+  greetingWrap: {
+    paddingHorizontal: 16,
+    paddingTop: 20,
+  },
+
+  greetingTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#0f172a",
+  },
+
+  greetingText: {
+    fontSize: 14,
+    color: "#64748B",
+    marginTop: 6,
+  },
+
+  email: {
+    fontSize: 12,
+    color: "#2563EB",
+    marginTop: 6,
+  },
+
+  cardWrap: {
+    paddingHorizontal: 16,
+    marginTop: 20,
+  },
+
+  aiCard: {
+    backgroundColor: "#0f766e",
+    borderRadius: 20,
+    padding: 20,
+  },
+
+  aiBadge: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: "#FFF",
+    backgroundColor: "rgba(255,255,255,0.2)",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    alignSelf: "flex-start",
+    borderRadius: 20,
+  },
+
+  aiTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#FFF",
+    marginTop: 10,
+  },
+
+  aiDesc: {
+    fontSize: 13,
+    color: "#CCFBF1",
+    marginTop: 6,
+  },
+
+  aiButton: {
+    backgroundColor: "#FFF",
+    marginTop: 14,
+    paddingVertical: 10,
+    borderRadius: 10,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 6,
+  },
+
+  aiButtonText: {
+    fontWeight: "bold",
+    color: "#0f766e",
+  },
+
+  servicesWrap: {
+    paddingHorizontal: 16,
+    marginTop: 25,
+  },
+
+  servicesTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#0f172a",
+    marginBottom: 12,
+  },
+
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+
+  serviceCard: {
+    width: "48%",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 14,
+  },
+
+  serviceCardWhite: {
+    width: "48%",
+    backgroundColor: "#FFF",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+  },
+
+  serviceTitle: {
+    color: "#FFF",
+    fontWeight: "bold",
+    marginTop: 10,
+  },
+
+  serviceDescLight: {
+    color: "#E0E7FF",
+    fontSize: 12,
+    marginTop: 4,
+  },
+
+  serviceTitleDark: {
+    color: "#0f172a",
+    fontWeight: "bold",
+    marginTop: 10,
+  },
+
+  serviceDescDark: {
+    color: "#64748B",
+    fontSize: 12,
+    marginTop: 4,
+  },
+});
