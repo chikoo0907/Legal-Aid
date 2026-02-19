@@ -10,6 +10,7 @@ import {
 import { register as apiRegister } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 export default function Register({ navigation }) {
   // ✅ NEW: Added name & phone state
@@ -19,6 +20,7 @@ export default function Register({ navigation }) {
   const [password, setPassword] = useState("");
 
   const { login, isAuthenticated, loading } = useAuth();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
@@ -39,7 +41,7 @@ export default function Register({ navigation }) {
       await login(user);
       navigation.replace("Home", { user });
     } catch (e) {
-      Alert.alert("Sign up failed", "Unable to create account.");
+      Alert.alert(t("signUpFailed"), t("unableToCreateAccount"));
     }
   }
 
@@ -54,21 +56,21 @@ export default function Register({ navigation }) {
               <Ionicons name="hammer-outline" size={36} color="white" />
             </View>
             <Text className="text-3xl font-bold text-slate-900">
-              Create Account
+              {t("createAccount")}
             </Text>
           </View>
 
           {/* ✅ NEW: Name Input */}
           <View className="mt-5">
             <Text className="text-xs font-semibold text-slate-500 mb-2">
-              FULL NAME
+              {t("fullName").toUpperCase()}
             </Text>
             <View className="flex-row items-center bg-white border border-slate-200 rounded-xl px-4 py-4">
               <Ionicons name="person-outline" size={18} color="#94a3b8" />
               <TextInput
                 value={name}
                 onChangeText={setName}
-                placeholder="Enter full name"
+                placeholder={t("enterFullName")}
                 className="flex-1 ml-3 text-slate-900"
               />
             </View>
@@ -77,7 +79,7 @@ export default function Register({ navigation }) {
           {/* Email */}
           <View className="mt-5">
             <Text className="text-xs font-semibold text-slate-500 mb-2">
-              EMAIL
+              {t("email").toUpperCase()}
             </Text>
             <View className="flex-row items-center bg-white border border-slate-200 rounded-xl px-4 py-4">
               <Ionicons name="mail-outline" size={18} color="#94a3b8" />
@@ -94,7 +96,7 @@ export default function Register({ navigation }) {
           {/* ✅ NEW: Phone Input */}
           <View className="mt-5">
             <Text className="text-xs font-semibold text-slate-500 mb-2">
-              PHONE NUMBER
+              {t("phoneNumber").toUpperCase()}
             </Text>
             <View className="flex-row items-center bg-white border border-slate-200 rounded-xl px-4 py-4">
               <Ionicons name="call-outline" size={18} color="#94a3b8" />
@@ -102,7 +104,7 @@ export default function Register({ navigation }) {
                 value={phone}
                 onChangeText={setPhone}
                 keyboardType="phone-pad"
-                placeholder="Enter phone number"
+                placeholder={t("enterPhoneNumber")}
                 className="flex-1 ml-3 text-slate-900"
               />
             </View>
@@ -111,7 +113,7 @@ export default function Register({ navigation }) {
           {/* Password */}
           <View className="mt-5">
             <Text className="text-xs font-semibold text-slate-500 mb-2">
-              PASSWORD
+              {t("password").toUpperCase()}
             </Text>
             <View className="flex-row items-center bg-white border border-slate-200 rounded-xl px-4 py-4">
               <Ionicons name="lock-closed-outline" size={18} color="#94a3b8" />
@@ -119,7 +121,7 @@ export default function Register({ navigation }) {
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
-                placeholder="Create a password"
+                placeholder={t("createPassword")}
                 className="flex-1 ml-3 text-slate-900"
               />
             </View>
@@ -130,7 +132,7 @@ export default function Register({ navigation }) {
             className="bg-blue-600 rounded-xl py-4 mt-12 items-center"
           >
             <Text className="text-white font-bold text-base">
-              Create Account
+              {t("createAccount")}
             </Text>
           </TouchableOpacity>
 

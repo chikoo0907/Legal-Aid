@@ -6,6 +6,8 @@ import auth from "./routes/auth.js";
 import chat from "./routes/chat.js";
 import vault from "./routes/vault.js";
 import documents from "./routes/documents.js";
+import user from "./routes/user.js";
+import translate from "./routes/translate.js";
 
 const app = express();
 
@@ -18,6 +20,8 @@ app.use("/auth", auth);
 app.use("/chat", chat);
 app.use("/vault", vault);
 app.use("/documents", documents);
+app.use("/user", user);
+app.use("/translate", translate);
 
 // Health check
 app.get("/", (req, res) => {

@@ -13,6 +13,7 @@ model User {
   phone     String?
   password  String
   language  String   @default("en")
+  vaultPinHash String?
 
   chats     Chat[]
   documents Document[]

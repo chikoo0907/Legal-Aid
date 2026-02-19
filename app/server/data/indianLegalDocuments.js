@@ -3,16 +3,16 @@
  * ~200 scenarios across categories. Extend by adding entries to the array.
  */
 export const DOCUMENT_CATEGORIES = [
-  { id: "id_personal", labelEn: "ID & Personal", labelHi: "पहचान व व्यक्तिगत" },
-  { id: "property_land", labelEn: "Property & Land", labelHi: "संपत्ति व जमीन" },
-  { id: "family", labelEn: "Family & Marriage", labelHi: "परिवार व विवाह" },
+  { id: "id_personal", labelEn: "ID & Personal", labelHi: "पहचान व व्यक्तिगत", labelMr: "ओळख व वैयक्तिक" },
+  { id: "property_land", labelEn: "Property & Land", labelHi: "संपत्ति व जमीन", labelMr: "मालमत्ता व जमीन" },
+  { id: "family", labelEn: "Family & Marriage", labelHi: "परिवार व विवाह", labelMr: "कुटुंब व विवाह" },
   { id: "employment", labelEn: "Employment", labelHi: "रोजगार" },
-  { id: "consumer", labelEn: "Consumer", labelHi: "उपभोक्ता" },
-  { id: "criminal", labelEn: "Criminal & Police", labelHi: "आपराधिक व पुलिस" },
-  { id: "civil", labelEn: "Civil & Courts", labelHi: "दीवानी व अदालत" },
+  { id: "consumer", labelEn: "Consumer", labelHi: "उपभोक्ता", labelMr: "ग्राहक" },
+  { id: "criminal", labelEn: "Criminal & Police", labelHi: "आपराधिक व पुलिस", labelMr: "फौजदारी व पोलिस" },
+  { id: "civil", labelEn: "Civil & Courts", labelHi: "दीवानी व अदालत", labelMr: "दिवाणी व न्यायालय" },
   { id: "government", labelEn: "Govt Certificates", labelHi: "सरकारी प्रमाणपत्र" },
-  { id: "business", labelEn: "Business & Tax", labelHi: "व्यवसाय व कर" },
-  { id: "bank_insurance", labelEn: "Bank & Insurance", labelHi: "बैंक व बीमा" },
+  { id: "business", labelEn: "Business & Tax", labelHi: "व्यवसाय व कर", labelMr: "व्यवसाय व कर" },
+  { id: "bank_insurance", labelEn: "Bank & Insurance", labelHi: "बैंक व बीमा", labelMr: "बँक व विमा" },
 ];
 
 export const INDIAN_LEGAL_DOCUMENTS = [
@@ -53,6 +53,9 @@ export const INDIAN_LEGAL_DOCUMENTS = [
   { id:"ration_split", category:"id_personal", titleEn:"Ration card family split", keywords:["ration split"], documents:["Existing ration card"], steps:["Apply at food dept"] },
   { id:"aadhaar_virtual_id", category:"id_personal", titleEn:"Generate Aadhaar Virtual ID", keywords:["vid","virtual id"], documents:["Aadhaar"], steps:["UIDAI portal"] },
   { id:"identity_affidavit", category:"id_personal", titleEn:"Identity affidavit", keywords:["identity affidavit"], documents:["Self declaration"], steps:["Notary attestation"] },
+  
+  // marathi
+  
   // --- Property & Land ---
   { id: "sale_deed", category: "property_land", titleEn: "Sale deed – registration", keywords: ["sale deed", "property sale", "buy land", "registry"], documents: ["Title documents of seller", "Encumbrance certificate", "Tax receipts", "NOC from society/development authority", "ID of buyer & seller", "Passport photos", "Stamp paper"], steps: ["Draft sale deed", "Pay stamp duty", "Register at sub-registrar", "Mutation in revenue records"] },
   { id: "mutation_land", category: "property_land", titleEn: "Land mutation (name change in records)", keywords: ["mutation", "mutation land", "name change land", "pattadar"], documents: ["Registered sale deed/gift/succession", "Old patta/title", "Encumbrance certificate", "ID proof", "Application form"], steps: ["Apply at tehsil/taluk or state revenue portal", "Verification", "Mutation order", "Updated patta"] },

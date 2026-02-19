@@ -1,14 +1,5 @@
 import { View, Text, Pressable, ScrollView } from "react-native";
-
-const LANGUAGES = [
-  { label: "English", value: "en" },
-  { label: "Hindi", value: "hi" },
-  { label: "Marathi", value: "mr" },
-  { label: "Gujarati", value: "gu" },
-  { label: "Punjabi", value: "pa" },
-  { label: "Tamil", value: "ta" },
-  { label: "Telugu", value: "te" },
-];
+import { SUPPORTED_LANGUAGES } from "../i18n/resources";
 
 export default function LanguageSelector({ value, onChange }) {
   return (
@@ -22,12 +13,12 @@ export default function LanguageSelector({ value, onChange }) {
           gap: 8,
         }}
       >
-        {LANGUAGES.map((l) => {
-          const active = l.value === value;
+        {SUPPORTED_LANGUAGES.map((l) => {
+          const active = l.id === value;
           return (
             <Pressable
-              key={l.value}
-              onPress={() => onChange(l.value)}
+              key={l.id}
+              onPress={() => onChange(l.id)}
               className={`px-3 py-2 rounded-full border ${
                 active
                   ? "bg-blue-600 border-blue-600"
@@ -35,7 +26,7 @@ export default function LanguageSelector({ value, onChange }) {
               }`}
             >
               <Text className={`text-xs font-semibold ${active ? "text-white" : "text-slate-900"}`}>
-                {l.label}
+                {l.nativeLabel}
               </Text>
             </Pressable>
           );

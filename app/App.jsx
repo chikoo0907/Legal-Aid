@@ -19,6 +19,7 @@ import StepByStep from "./screens/StepByStep";
 import StepDetails from "./screens/StepDetails";
 
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { LanguageProvider } from "./context/LanguageContext";
 import Profile from "./screens/Profile";
 
 const Stack = createNativeStackNavigator();
@@ -70,7 +71,9 @@ export default function App() {
   return (
     <SafeAreaProvider>   
       <AuthProvider>
-        <AppContent />
+        <LanguageProvider>
+          <AppContent />
+        </LanguageProvider>
       </AuthProvider>
       </SafeAreaProvider>
     

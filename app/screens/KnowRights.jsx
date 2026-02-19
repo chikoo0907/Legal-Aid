@@ -1,34 +1,9 @@
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
-const translations = {
-  en: {
-    title: "Know Your Rights",
-    subtitle: "Understand your legal protections",
-    intro:
-      "Learn about your fundamental legal rights and how to exercise them properly.",
-    police: "Rights During Police Interaction",
-    women: "Women’s Rights",
-    consumer: "Consumer Rights",
-    labor: "Labor & Employment Rights",
-    property: "Property Rights",
-  },
-  hi: {
-    title: "अपने अधिकार जानें",
-    subtitle: "अपने कानूनी संरक्षण को समझें",
-    intro:
-      "अपने मौलिक कानूनी अधिकारों के बारे में जानें और उनका सही तरीके से उपयोग करें।",
-    police: "पुलिस से संबंधित अधिकार",
-    women: "महिला अधिकार",
-    consumer: "उपभोक्ता अधिकार",
-    labor: "श्रम एवं रोजगार अधिकार",
-    property: "संपत्ति अधिकार",
-  },
-};
-
-export default function KnowRights({ navigation, route }) {
-  const language = route?.params?.language || "en";
-  const t = translations[language];
+export default function KnowRights({ navigation }) {
+  const { t } = useTranslation();
 
   return (
     <View className="flex-1 bg-slate-50">
@@ -38,7 +13,7 @@ export default function KnowRights({ navigation, route }) {
           <Ionicons name="arrow-back" size={22} color="#0f172a" />
         </TouchableOpacity>
         <Text className="text-xl font-bold text-slate-900">
-          {t.title}
+          {t("knowRightsTitle")}
         </Text>
       </View>
 
@@ -49,10 +24,10 @@ export default function KnowRights({ navigation, route }) {
         {/* Intro Section */}
         <View className="mt-6">
           <Text className="text-lg font-semibold text-slate-900">
-            {t.subtitle}
+            {t("knowRightsSubtitle")}
           </Text>
           <Text className="text-slate-600 mt-2 text-sm leading-6">
-            {t.intro}
+            {t("knowRightsIntro")}
           </Text>
         </View>
 
@@ -61,50 +36,50 @@ export default function KnowRights({ navigation, route }) {
           <TouchableOpacity className="bg-indigo-600 rounded-xl p-4">
             <Ionicons name="shield-checkmark" size={26} color="white" />
             <Text className="text-white font-bold mt-3">
-              {t.police}
+              {t("knowRightsPolice")}
             </Text>
             <Text className="text-indigo-200 text-xs mt-1">
-              What to do & what not to do
+              {t("knowRightsPoliceDesc")}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity className="bg-pink-600 rounded-xl p-4">
             <Ionicons name="female" size={26} color="white" />
             <Text className="text-white font-bold mt-3">
-              {t.women}
+              {t("knowRightsWomen")}
             </Text>
             <Text className="text-pink-200 text-xs mt-1">
-              Protection & safety laws
+              {t("knowRightsWomenDesc")}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity className="bg-blue-600 rounded-xl p-4">
             <Ionicons name="cart" size={26} color="white" />
             <Text className="text-white font-bold mt-3">
-              {t.consumer}
+              {t("knowRightsConsumer")}
             </Text>
             <Text className="text-blue-200 text-xs mt-1">
-              Refunds, complaints & safety
+              {t("knowRightsConsumerDesc")}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity className="bg-emerald-600 rounded-xl p-4">
             <Ionicons name="briefcase" size={26} color="white" />
             <Text className="text-white font-bold mt-3">
-              {t.labor}
+              {t("knowRightsLabor")}
             </Text>
             <Text className="text-emerald-200 text-xs mt-1">
-              Workplace protections
+              {t("knowRightsLaborDesc")}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity className="bg-white border border-slate-200 rounded-xl p-4">
             <Ionicons name="home" size={26} color="#2563eb" />
             <Text className="text-slate-900 font-bold mt-3">
-              {t.property}
+              {t("knowRightsProperty")}
             </Text>
             <Text className="text-slate-500 text-xs mt-1">
-              Ownership & land laws
+              {t("knowRightsPropertyDesc")}
             </Text>
           </TouchableOpacity>
         </View>

@@ -10,11 +10,13 @@ import {
 import { login as apiLogin } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 export default function Login({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { login, isAuthenticated, loading } = useAuth();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
@@ -28,7 +30,7 @@ export default function Login({ navigation }) {
       await login(user);
       navigation.replace("Home", { user });
     } catch (e) {
-      Alert.alert("Login failed", "Invalid credentials.");
+      Alert.alert(t("loginFailed"), t("invalidCredentials"));
     }
   }
 
@@ -43,17 +45,17 @@ export default function Login({ navigation }) {
               <Ionicons name="shield-checkmark" size={40} color="#2563eb" />
             </View>
             <Text className="text-3xl font-bold text-slate-900">
-              Welcome Back
+              {t("welcomeBack")}
             </Text>
             <Text className="text-slate-500 mt-2">
-              Sign in to continue
+              {t("signInToContinue")}
             </Text>
           </View>
 
           {/* Email */}
           <View>
             <Text className="text-xs font-semibold text-slate-500 mb-2">
-              EMAIL
+              {t("email").toUpperCase()}
             </Text>
             <View className="flex-row items-center bg-white border border-slate-200 rounded-xl px-4 py-4">
               <Ionicons name="mail-outline" size={18} color="#94a3b8" />
@@ -70,7 +72,7 @@ export default function Login({ navigation }) {
           {/* Password */}
           <View className="mt-5">
             <Text className="text-xs font-semibold text-slate-500 mb-2">
-              PASSWORD
+              {t("password").toUpperCase()}
             </Text>
             <View className="flex-row items-center bg-white border border-slate-200 rounded-xl px-4 py-4">
               <Ionicons name="lock-closed-outline" size={18} color="#94a3b8" />
@@ -90,18 +92,18 @@ export default function Login({ navigation }) {
             className="bg-blue-600 rounded-xl py-4 mt-12 items-center"
           >
             <Text className="text-white font-bold text-base">
-              Login
+              {t("login")}
             </Text>
           </TouchableOpacity>
 
           {/* Footer */}
           <Text className="text-center text-slate-500 mt-8">
-            New here?{" "}
+            {t("newHere")}{" "}
             <Text
               className="text-blue-600 font-semibold"
               onPress={() => navigation.navigate("Register")}
             >
-              Create Account
+              {t("createAccount")}
             </Text>
           </Text>
 

@@ -10,29 +10,10 @@ import {
 } from "react-native";
 import { getDocumentsList } from "../services/api";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
-const translations = {
-  en: {
-    title: "Documents Needed",
-    subtitle: "Indian laws & procedures",
-    search: "Search (e.g. PAN, land, passport)",
-    all: "All",
-    documents: "Documents Required",
-    steps: "Steps to Follow",
-  },
-  hi: {
-    title: "आवश्यक दस्तावेज़",
-    subtitle: "भारतीय कानून व प्रक्रियाएं",
-    search: "खोज (जैसे PAN, जमीन, पासपोर्ट)",
-    all: "सभी",
-    documents: "आवश्यक दस्तावेज़",
-    steps: "चरण",
-  },
-};
-
-export default function DocumentsNeeded({ navigation, route }) {
-  const language = route?.params?.language || "en";
-  const t = translations[language] || translations.en;
+export default function DocumentsNeeded({ navigation }) {
+  const { t } = useTranslation();
 
   const [categories, setCategories] = useState([]);
   const [items, setItems] = useState([]);
@@ -50,12 +31,12 @@ export default function DocumentsNeeded({ navigation, route }) {
       setCategories(data.categories || []);
       setItems(data.items || []);
     } catch (e) {
-      setError(e.message || "Failed to load.");
+      setError(e.message || t("docsNeededLoadFailed"));
       setItems([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     const debounce = setTimeout(() => load(query, categoryId), 300);
@@ -65,7 +46,7 @@ export default function DocumentsNeeded({ navigation, route }) {
   const onSearch = () => load(query, categoryId);
 
   const renderCategory = ({ item }) => {
-    const label = language === "hi" ? item.labelHi : item.labelEn;
+    const label = item.labelEn;
     const active = categoryId === item.id;
 
     return (
@@ -114,7 +95,7 @@ export default function DocumentsNeeded({ navigation, route }) {
           <View style={styles.detail}>
             <View style={styles.divider} />
 
-            <Text style={styles.sectionTitle}>{t.documents}</Text>
+            <Text style={styles.sectionTitle}>{t("docsNeededDocuments")}</Text>
 
             {(item.documents || []).map((doc, i) => (
               <View key={i} style={styles.row}>
@@ -124,7 +105,7 @@ export default function DocumentsNeeded({ navigation, route }) {
             ))}
 
             <Text style={[styles.sectionTitle, { marginTop: 16 }]}>
-              {t.steps}
+              {t("docsNeededSteps")}
             </Text>
 
             {(item.steps || []).map((step, i) => (
@@ -150,8 +131,8 @@ export default function DocumentsNeeded({ navigation, route }) {
         </TouchableOpacity>
 
         <View style={{ marginLeft: 10 }}>
-          <Text style={styles.title}>{t.title}</Text>
-          <Text style={styles.subtitle}>{t.subtitle}</Text>
+          <Text style={styles.title}>{t("docsNeededTitle")}</Text>
+          <Text style={styles.subtitle}>{t("docsNeededSubtitle")}</Text>
         </View>
       </View>
 
@@ -159,7 +140,7 @@ export default function DocumentsNeeded({ navigation, route }) {
       <View style={styles.searchWrap}>
         <TextInput
           style={styles.input}
-          placeholder={t.search}
+          placeholder={t("docsNeededSearchPlaceholder")}
           placeholderTextColor="#94A3B8"
           value={query}
           onChangeText={setQuery}
@@ -171,11 +152,13 @@ export default function DocumentsNeeded({ navigation, route }) {
       <FlatList
         horizontal
         showsHorizontalScrollIndicator={false}
-        data={[{ id: "", labelEn: t.all, labelHi: t.all }, ...categories]}
+        data={[{ id: "", labelEn: t("docsNeededAll") }, ...categories]}
         keyExtractor={(item) => item.id || "all"}
         renderItem={renderCategory}
         contentContainerStyle={styles.chips}
       />
+
+      
 
       {/* Content */}
       {error ? (
@@ -196,7 +179,7 @@ export default function DocumentsNeeded({ navigation, route }) {
           contentContainerStyle={styles.list}
           ListEmptyComponent={
             <View style={styles.centered}>
-              <Text style={styles.muted}>No matches found</Text>
+              <Text style={styles.muted}>{t("docsNeededNoMatches")}</Text>
             </View>
           }
         />
@@ -243,39 +226,40 @@ const styles = StyleSheet.create({
     fontSize: 16,
     elevation: 2,
   },
-
   chips: {
-    paddingHorizontal: 12,
-    paddingBottom: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    alignItems: "center",
   },
-
+  
   chip: {
-    paddingHorizontal: 18,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: "#FFF",
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    marginRight: 8,
+    paddingHorizontal: 16,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#F1F5F9",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
   },
-
+  
   chipActive: {
     backgroundColor: "#1152d4",
   },
-
+  
   chipText: {
-    color: "#64748B",
-    fontSize: 14,
+    color: "#475569",
+    fontSize: 13,
     fontWeight: "500",
   },
-
+  
   chipTextActive: {
-    color: "#FFF",
-  },
+    color: "#FFFFFF",
+    fontWeight: "600",
+  },    
 
   list: {
     paddingHorizontal: 16,
-    paddingBottom: 30,
+    paddingBottom: 16,
   },
 
   card: {

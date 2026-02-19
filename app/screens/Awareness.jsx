@@ -9,61 +9,30 @@ import {
 } from "react-native";
 import YoutubePlayer from "react-native-youtube-iframe";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 const { height } = Dimensions.get("window");
 const videoHeight = height * 0.65;
 
-const videos = [
-  {
-    id: "1",
-    videoId: "5kAngoBPm1g",
-    title: "Understanding Domestic Violence Act",
-    description:
-      "Learn about protection and legal remedies available for women under the 2005 Act.",
-    category: "Women Rights",
-    language: "Hindi",
-  },
-  {
-    id: "2",
-    videoId: "XrKEtEzqZ7g",
-    title: "Know Your FIR Rights",
-    description:
-      "Understand how FIR works and your rights while filing a police complaint.",
-    category: "Police Rights",
-    language: "Hindi",
-  },
-  {
-    id: "3",
-    videoId: "X14B37hYm1k",
-    title: "Legal Help for Tenants",
-    description:
-      "Know your rights as a tenant under Indian property laws.",
-    category: "Property Law",
-    language: "Hindi",
-  },
-  {
-    id: "4",
-    videoId: "VTQn0ogo4ms",
-    title: "Cyber Crime Awareness",
-    description:
-      "Stay safe online and understand legal remedies against cyber fraud.",
-    category: "Cyber Law",
-    language: "Hindi",
-  },
-  {
-    id: "5",
-    videoId: "9_M4bNOxsYs",
-    title: "Consumer Protection Act",
-    description:
-      "Know your rights as a consumer and how to file complaints.",
-    category: "Consumer Law",
-    language: "Hindi",
-  },
+const videoData = [
+  { id: "1", videoId: "5kAngoBPm1g", titleKey: "videoTitle1", descKey: "videoDesc1", categoryKey: "videoCategory1" },
+  { id: "2", videoId: "XrKEtEzqZ7g", titleKey: "videoTitle2", descKey: "videoDesc2", categoryKey: "videoCategory2" },
+  { id: "3", videoId: "X14B37hYm1k", titleKey: "videoTitle3", descKey: "videoDesc3", categoryKey: "videoCategory3" },
+  { id: "4", videoId: "VTQn0ogo4ms", titleKey: "videoTitle4", descKey: "videoDesc4", categoryKey: "videoCategory4" },
+  { id: "5", videoId: "9_M4bNOxsYs", titleKey: "videoTitle5", descKey: "videoDesc5", categoryKey: "videoCategory5" },
 ];
 
 export default function Awareness({ navigation }) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const { t } = useTranslation();
   const viewabilityConfig = { viewAreaCoveragePercentThreshold: 80 };
+
+  const videos = videoData.map((v) => ({
+    ...v,
+    title: t(v.titleKey),
+    description: t(v.descKey),
+    category: t(v.categoryKey),
+  }));
 
   const onViewableItemsChanged = useRef(({ viewableItems }) => {
     if (viewableItems.length > 0) {
@@ -101,7 +70,7 @@ export default function Awareness({ navigation }) {
             <View className="flex-row items-center gap-1">
               <MaterialIcons name="translate" size={14} color="white" />
               <Text className="text-[10px] font-bold text-white uppercase">
-                {item.language}
+                {t("videoLanguage")}
               </Text>
             </View>
           </View>
@@ -131,7 +100,7 @@ export default function Awareness({ navigation }) {
                 <MaterialIcons name="share" size={22} color="white" />
               </View>
               <Text className="text-[10px] font-semibold text-white mt-1">
-                Share
+                {t("awarenessShare")}
               </Text>
             </Pressable>
           </View>
@@ -166,11 +135,11 @@ export default function Awareness({ navigation }) {
             <MaterialIcons name="arrow-back-ios" size={20} />
           </TouchableOpacity>
           <Text className="text-xl font-bold text-slate-900 ml-2">
-            Legal Awareness
+            {t("awarenessHeader")}
           </Text>
         </View>
         <Text className="text-sm text-slate-500 font-medium">
-          Know Your Rights in Simple Language
+          {t("awarenessTagline")}
         </Text>
       </View>
 

@@ -1,36 +1,15 @@
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal, Pressable } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
-
-const translations = {
-  en: {
-    title: "Nyayasahayak",
-    subtitle: "Your Legal Assistant",
-    greeting: "How can we help you understand the law today?",
-    ask: "Ask Legal Assistant",
-    knowRights: "Know Your Rights",
-    awareness: "Awareness",
-    vault: "Document Vault",
-    documentsNeeded: "Documents Needed",
-    stepbystep: "Step By Step help"
-  },
-  hi: {
-    title: "न्यायसहायक",
-    subtitle: "आपका कानूनी सहायक",
-    greeting: "आज हम आपको कानून समझने में कैसे मदद कर सकते हैं?",
-    ask: "कानूनी सहायक से पूछें",
-    knowRights: "अपने अधिकार जानें",
-    awareness: "जागरूकता",
-    vault: "दस्तावेज़ तिजोरी",
-    documentsNeeded: "आवश्यक दस्तावेज़",
-    stepbystep: "स्टेप बाय स्टेप मदद"
-  },
-};
+import { useTranslation } from "react-i18next";
+import { useLanguage } from "../context/LanguageContext";
 
 export default function Home({ navigation, route }) {
   const { user } = useAuth();
-  const language = route?.params?.language || "en";
-  const t = translations[language];
+  const { t } = useTranslation();
+  const { language, setLanguage, supportedLanguages } = useLanguage();
+  const [langOpen, setLangOpen] = useState(false);
 
   return (
     <View style={styles.container}>
@@ -42,11 +21,15 @@ export default function Home({ navigation, route }) {
               <Ionicons name="person" size={22} color="#2563eb" />
             </View>
           </TouchableOpacity>
-          <Text style={styles.title}>{t.title}</Text>
+          <Text style={styles.title}>{t("appName")}</Text>
         </View>
 
         <View style={styles.headerIcons}>
-          <Ionicons name="notifications-outline" size={22} color="#0f172a" />
+          <TouchableOpacity onPress={() => setLangOpen(true)} accessibilityLabel={t("switchLanguage")}>
+            <View style={styles.langChip}>
+              <Text style={styles.langChipText}>{language.toUpperCase()}</Text>
+            </View>
+          </TouchableOpacity>
           <Ionicons name="settings-outline" size={22} color="#0f172a" />
         </View>
       </View>
@@ -54,8 +37,8 @@ export default function Home({ navigation, route }) {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Greeting */}
         <View style={styles.greetingWrap}>
-          <Text style={styles.greetingTitle}>Namaste!!</Text>
-          <Text style={styles.greetingText}>{t.greeting}</Text>
+          <Text style={styles.greetingTitle}>{t("namaste")}</Text>
+          <Text style={styles.greetingText}>{t("homeGreeting")}</Text>
           {user && (
             <Text style={styles.email}>{user.email}</Text>
           )}
@@ -64,19 +47,19 @@ export default function Home({ navigation, route }) {
         {/* AI Card */}
         <View style={styles.cardWrap}>
           <View style={styles.aiCard}>
-            <Text style={styles.aiBadge}>AI POWERED</Text>
+            <Text style={styles.aiBadge}>{t("aiPowered")}</Text>
 
-            <Text style={styles.aiTitle}>{t.ask}</Text>
+            <Text style={styles.aiTitle}>{t("askLegalAssistant")}</Text>
 
             <Text style={styles.aiDesc}>
-              Chat with our AI to get instant legal guidance in simple language.
+              {t("aiCardDesc")}
             </Text>
 
             <TouchableOpacity
-              onPress={() => navigation.navigate("Chat", { language })}
+              onPress={() => navigation.navigate("Chat")}
               style={styles.aiButton}
             >
-              <Text style={styles.aiButtonText}>Start Chatting</Text>
+              <Text style={styles.aiButtonText}>{t("startChatting")}</Text>
               <Ionicons name="chatbubble-ellipses" size={18} color="#0f766e" />
             </TouchableOpacity>
           </View>
@@ -84,56 +67,56 @@ export default function Home({ navigation, route }) {
 
         {/* Services */}
         <View style={styles.servicesWrap}>
-          <Text style={styles.servicesTitle}>Explore Services</Text>
+          <Text style={styles.servicesTitle}>{t("exploreServices")}</Text>
 
           <View style={styles.grid}>
             {/* Step By Step */}
             <TouchableOpacity
-              onPress={() => navigation.navigate("StepByStep", { language })}
+              onPress={() => navigation.navigate("StepByStep")}
               style={[styles.serviceCard, { backgroundColor: "#4f46e5" }]}
             >
               <MaterialCommunityIcons name="help" size={28} color="white" />
-              <Text style={styles.serviceTitle}>{t.stepbystep}</Text>
+              <Text style={styles.serviceTitle}>{t("stepByStep")}</Text>
               <Text style={styles.serviceDescLight}>
-                Simplified legal guides
+                {t("stepByStepDesc")}
               </Text>
             </TouchableOpacity>
 
             {/* Documents Needed */}
             <TouchableOpacity
               onPress={() =>
-                navigation.navigate("DocumentsNeeded", { language })
+                navigation.navigate("DocumentsNeeded")
               }
               style={[styles.serviceCard, { backgroundColor: "#2563eb" }]}
             >
               <Ionicons name="document-text" size={28} color="white" />
-              <Text style={styles.serviceTitle}>{t.documentsNeeded}</Text>
+              <Text style={styles.serviceTitle}>{t("documentsNeeded")}</Text>
               <Text style={styles.serviceDescLight}>
-                Required paperwork
+                {t("documentsNeededDesc")}
               </Text>
             </TouchableOpacity>
 
             {/* Vault */}
             <TouchableOpacity
-              onPress={() => navigation.navigate("Vault", { language })}
+              onPress={() => navigation.navigate("Vault")}
               style={styles.serviceCardWhite}
             >
               <Ionicons name="folder-open" size={28} color="#2563eb" />
-              <Text style={styles.serviceTitleDark}>{t.vault}</Text>
+              <Text style={styles.serviceTitleDark}>{t("documentVault")}</Text>
               <Text style={styles.serviceDescDark}>
-                Secure document storage
+                {t("documentVaultDesc")}
               </Text>
             </TouchableOpacity>
 
             {/* Awareness */}
             <TouchableOpacity
-              onPress={() => navigation.navigate("Awareness", { language })}
+              onPress={() => navigation.navigate("Awareness")}
               style={styles.serviceCardWhite}
             >
               <Ionicons name="megaphone" size={28} color="#f97316" />
-              <Text style={styles.serviceTitleDark}>{t.awareness}</Text>
+              <Text style={styles.serviceTitleDark}>{t("awareness")}</Text>
               <Text style={styles.serviceDescDark}>
-                Legal updates & news
+                {t("awarenessDesc")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -141,6 +124,33 @@ export default function Home({ navigation, route }) {
 
         <View style={{ height: 30 }} />
       </ScrollView>
+
+      <Modal visible={langOpen} transparent animationType="fade" onRequestClose={() => setLangOpen(false)}>
+        <Pressable style={styles.modalBackdrop} onPress={() => setLangOpen(false)}>
+          <Pressable style={styles.modalCard} onPress={() => {}}>
+            <Text style={styles.modalTitle}>{t("switchLanguage")}</Text>
+            <View style={{ marginTop: 10 }}>
+              {supportedLanguages.map((l) => {
+                const active = l.id === language;
+                return (
+                  <TouchableOpacity
+                    key={l.id}
+                    onPress={async () => {
+                      await setLanguage(l.id);
+                      setLangOpen(false);
+                    }}
+                    style={[styles.langRow, active && styles.langRowActive]}
+                  >
+                    <Text style={[styles.langRowText, active && styles.langRowTextActive]}>
+                      {l.nativeLabel} ({l.label})
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -187,6 +197,20 @@ const styles = StyleSheet.create({
   headerIcons: {
     flexDirection: "row",
     gap: 15,
+    alignItems: "center",
+  },
+  langChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: "#EEF2FF",
+    borderWidth: 1,
+    borderColor: "#C7D2FE",
+  },
+  langChipText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#1D4ED8",
   },
 
   greetingWrap: {
@@ -320,5 +344,43 @@ const styles = StyleSheet.create({
     color: "#64748B",
     fontSize: 12,
     marginTop: 4,
+  },
+
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.35)",
+    justifyContent: "center",
+    padding: 18,
+  },
+  modalCard: {
+    backgroundColor: "#FFF",
+    borderRadius: 18,
+    padding: 16,
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#0f172a",
+  },
+  langRow: {
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    marginBottom: 10,
+  },
+  langRowActive: {
+    backgroundColor: "#EFF6FF",
+    borderColor: "#93C5FD",
+  },
+  langRowText: {
+    fontSize: 14,
+    color: "#0f172a",
+    fontWeight: "600",
+  },
+  langRowTextActive: {
+    color: "#1D4ED8",
   },
 });

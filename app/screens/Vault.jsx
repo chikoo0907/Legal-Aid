@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
+import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../context/AuthContext";
 import {
@@ -17,40 +18,68 @@ import {
   listVaultDocuments,
   deleteVaultDocument,
   renameVaultDocument,
+  setVaultPin,
+  verifyVaultPin,
+  resetVaultPin,
 } from "../services/api";
 import { getApiBaseUrl } from "../services/api";
 
-function categorizeDocument(name = "") {
+function categorizeDocument(name = "", t) {
   const lower = name.toLowerCase();
   if (/(aadhaar|aadhar|pan|voter|dl|license|passport|id)/.test(lower)) {
-    return "Personal IDs";
+    return t ? t("personalIds") : "Personal IDs";
   }
   if (/(house|deed|property|land|flat|rent|lease)/.test(lower)) {
-    return "Property Docs";
+    return t ? t("propertyDocs") : "Property Docs";
   }
   if (/(court|summons|notice|fir|case|order|petition)/.test(lower)) {
-    return "Court Papers";
+    return t ? t("courtPapers") : "Court Papers";
   }
-  return "Other";
+  return t ? t("other") : "Other";
 }
 
 
 export default function DocumentVault({ navigation }) {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
+  const { t } = useTranslation();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [activeFilter, setActiveFilter] = useState("All Files");
+  const [activeFilter, setActiveFilter] = useState(null); // null = all files
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [renameId, setRenameId] = useState(null);
   const [renameValue, setRenameValue] = useState("");
   const [renameCategory, setRenameCategory] = useState("Personal IDs");
+  const [pinVerified, setPinVerified] = useState(false);
+  const [currentPin, setCurrentPin] = useState("");
+  const [confirmPin, setConfirmPin] = useState("");
+  const [pinMode, setPinMode] = useState("verify"); // "verify" | "create" | "reset"
+  const [accountPassword, setAccountPassword] = useState("");
 
   useEffect(() => {
     if (!user?.id) return;
+    // If user has a vault PIN, require verification before loading documents.
+    if (user.hasVaultPin) {
+      setPinMode("verify");
+      setPinVerified(false);
+      setCurrentPin("");
+      setConfirmPin("");
+      setAccountPassword("");
+    } else {
+      // No PIN yet: prompt to create one before loading.
+      setPinMode("create");
+      setPinVerified(false);
+      setCurrentPin("");
+      setConfirmPin("");
+      setAccountPassword("");
+    }
+  }, [user?.id, user?.hasVaultPin]);
+
+  useEffect(() => {
+    if (!user?.id || !pinVerified) return;
     loadDocuments();
-  }, [user?.id]);
+  }, [user?.id, pinVerified]);
 
   async function loadDocuments() {
     try {
@@ -59,7 +88,7 @@ export default function DocumentVault({ navigation }) {
       setDocuments(Array.isArray(docs) ? docs : []);
     } catch (error) {
       console.error("Failed to load vault documents", error);
-      Alert.alert("Error", "Unable to load your documents.");
+      Alert.alert(t("error"), t("unableToLoadDocuments"));
     } finally {
       setLoading(false);
     }
@@ -67,7 +96,11 @@ export default function DocumentVault({ navigation }) {
 
   async function handleAddDocument() {
     if (!user?.id) {
-      Alert.alert("Login required", "Please login again to use the vault.");
+      Alert.alert(t("loginRequired"), t("pleaseLoginAgainVault"));
+      return;
+    }
+    if (!pinVerified) {
+      Alert.alert(t("vaultLocked"), t("enterVaultPinToContinue"));
       return;
     }
 
@@ -94,17 +127,21 @@ export default function DocumentVault({ navigation }) {
       setDocuments((prev) => [uploaded, ...prev]);
     } catch (error) {
       console.error("Failed to upload vault document", error);
-      Alert.alert("Upload failed", "Could not upload the selected document.");
+      Alert.alert(t("uploadFailed"), t("couldNotUploadSelected"));
     } finally {
       setUploading(false);
     }
   }
 
   async function handleDeleteDocument(id) {
-    Alert.alert("Delete document", "Are you sure you want to delete this?", [
-      { text: "Cancel", style: "cancel" },
+    if (!pinVerified) {
+      Alert.alert(t("vaultLocked"), t("enterVaultPinToContinue"));
+      return;
+    }
+    Alert.alert(t("deleteDocument"), t("deleteConfirm"), [
+      { text: t("cancel"), style: "cancel" },
       {
-        text: "Delete",
+        text: t("delete"),
         style: "destructive",
         onPress: async () => {
           try {
@@ -112,7 +149,7 @@ export default function DocumentVault({ navigation }) {
             setDocuments((prev) => prev.filter((d) => d.id !== id));
           } catch (error) {
             console.error("Failed to delete vault document", error);
-            Alert.alert("Error", "Unable to delete this document.");
+            Alert.alert(t("error"), t("unableToDeleteDocument"));
           }
         },
       },
@@ -120,8 +157,12 @@ export default function DocumentVault({ navigation }) {
   }
 
   async function handleOpenDocument(doc) {
+    if (!pinVerified) {
+      Alert.alert(t("vaultLocked"), t("enterVaultPinToContinue"));
+      return;
+    }
     if (!doc?.url && !doc?.path) {
-      Alert.alert("Unavailable", "This document does not have a file path.");
+      Alert.alert(t("unavailable"), t("documentNoPath"));
       return;
     }
 
@@ -150,39 +191,43 @@ export default function DocumentVault({ navigation }) {
       });
     } catch (error) {
       console.error("Failed to open document", error);
-      Alert.alert("Error", "Unable to open this document.");
+      Alert.alert(t("error"), t("unableToOpen"));
     }
   }
 
   function showFileActions(doc) {
-    Alert.alert(doc.name || "Document", "What would you like to do?", [
+    Alert.alert(doc.name || t("renameDocument"), t("whatWouldYouLikeToDo"), [
       {
-        text: "View",
+        text: t("view"),
         onPress: () => handleOpenDocument(doc),
       },
       {
-        text: "Rename / Categorize",
+        text: t("renameCategorize"),
         onPress: () => {
           setRenameId(doc.id);
           setRenameValue(doc.name || "");
-          const currentCategory = doc.category || categorizeDocument(doc.name);
+          const currentCategory = doc.category || categorizeDocument(doc.name, t);
           setRenameCategory(currentCategory);
         },
       },
       {
-        text: "Delete",
+        text: t("delete"),
         style: "destructive",
         onPress: () => handleDeleteDocument(doc.id),
       },
-      { text: "Cancel", style: "cancel" },
+      { text: t("cancel"), style: "cancel" },
     ]);
   }
 
   async function submitRename() {
+    if (!pinVerified) {
+      Alert.alert(t("vaultLocked"), t("enterVaultPinToContinue"));
+      return;
+    }
     if (!renameId) return;
     const newName = renameValue.trim();
     if (!newName) {
-      Alert.alert("Invalid name", "Name cannot be empty.");
+      Alert.alert(t("invalidName"), t("nameCannotBeEmpty"));
       return;
     }
 
@@ -199,13 +244,13 @@ export default function DocumentVault({ navigation }) {
       setRenameValue("");
     } catch (error) {
       console.error("Failed to rename document", error);
-      Alert.alert("Error", "Unable to rename this document.");
+      Alert.alert(t("error"), t("unableToRename"));
     }
   }
 
   const defaultCategories = useMemo(
-    () => ["Personal IDs", "Property Docs", "Court Papers", "Other"],
-    []
+    () => [t("personalIds"), t("propertyDocs"), t("courtPapers"), t("other")],
+    [t]
   );
 
   const normalizedDocuments = useMemo(() => {
@@ -214,20 +259,20 @@ export default function DocumentVault({ navigation }) {
         typeof d.category === "string" && d.category.trim()
           ? d.category.trim()
           : null;
-      const fallback = categorizeDocument(d.name);
+      const fallback = categorizeDocument(d.name, t);
       return {
         ...d,
         effectiveCategory: serverCategory || fallback,
       };
     });
-  }, [documents]);
+  }, [documents, t]);
 
   const filteredDocuments = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
 
     return normalizedDocuments.filter((doc) => {
       const matchesCategory =
-        activeFilter === "All Files" || doc.effectiveCategory === activeFilter;
+        activeFilter === null || doc.effectiveCategory === activeFilter;
 
       const matchesQuery =
         !q ||
@@ -276,18 +321,83 @@ export default function DocumentVault({ navigation }) {
   }, [filteredDocuments]);
 
   const recentFiles = useMemo(() => {
-    return filteredDocuments.slice(0, 5).map((doc) => ({
-      id: doc.id,
-      title: doc.name,
-      subtitle: `${new Date(doc.createdAt).toLocaleDateString()} • ${formatSize(
-        doc.size
-      )}`,
-      icon: pickIconForDoc(doc),
-      color: "blue",
-      path: doc.path,
-      raw: doc,
-    }));
-  }, [filteredDocuments]);
+    return activeFilter === null
+      ? filteredDocuments.slice(0, 5).map((doc) => ({
+          id: doc.id,
+          title: doc.name,
+          subtitle: `${new Date(doc.createdAt).toLocaleDateString()} • ${formatSize(
+            doc.size
+          )}`,
+          icon: pickIconForDoc(doc),
+          color: "blue",
+          path: doc.path,
+          raw: doc,
+        }))
+      : [];
+  }, [filteredDocuments, activeFilter]);
+
+  async function handleVerifyPin() {
+    if (!user?.id) return;
+    if (!/^\d{4}$/.test(currentPin)) {
+      Alert.alert(t("invalidPin"), t("pinMustBe4Digits"));
+      return;
+    }
+    try {
+      await verifyVaultPin(user.id, currentPin);
+      setPinVerified(true);
+    } catch (error) {
+      console.error("Failed to verify vault PIN", error);
+      Alert.alert(t("error"), t("incorrectPin"));
+    }
+  }
+
+  async function handleCreatePin() {
+    if (!user?.id) return;
+    if (!/^\d{4}$/.test(currentPin) || !/^\d{4}$/.test(confirmPin)) {
+      Alert.alert(t("invalidPin"), t("pinMustBe4Digits"));
+      return;
+    }
+    if (currentPin !== confirmPin) {
+      Alert.alert(t("invalidPin"), t("pinsDoNotMatch"));
+      return;
+    }
+    try {
+      await setVaultPin(user.id, currentPin);
+      setPinVerified(true);
+      setUser((prev) =>
+        prev ? { ...prev, hasVaultPin: true } : prev
+      );
+    } catch (error) {
+      console.error("Failed to set vault PIN", error);
+      Alert.alert(t("error"), t("unableToSetPin"));
+    }
+  }
+
+  async function handleResetPin() {
+    if (!user?.id) return;
+    if (!accountPassword.trim()) {
+      Alert.alert(t("error"), t("passwordRequiredForReset"));
+      return;
+    }
+    if (!/^\d{4}$/.test(currentPin) || !/^\d{4}$/.test(confirmPin)) {
+      Alert.alert(t("invalidPin"), t("pinMustBe4Digits"));
+      return;
+    }
+    if (currentPin !== confirmPin) {
+      Alert.alert(t("invalidPin"), t("pinsDoNotMatch"));
+      return;
+    }
+    try {
+      await resetVaultPin(user.id, accountPassword, currentPin);
+      setPinVerified(true);
+      setUser((prev) =>
+        prev ? { ...prev, hasVaultPin: true } : prev
+      );
+    } catch (error) {
+      console.error("Failed to reset vault PIN", error);
+      Alert.alert(t("error"), t("unableToResetPin"));
+    }
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-[#f6f6f8]">
@@ -300,12 +410,12 @@ export default function DocumentVault({ navigation }) {
             </View>
             <View>
               <Text className="text-lg font-bold text-slate-900">
-                Document Vault
+                {t("vaultTitle")}
               </Text>
               <View className="flex-row items-center gap-1">
                 <MaterialIcons name="verified" size={12} color="#16a34a" />
                 <Text className="text-[10px] font-bold uppercase text-slate-500">
-                  Secure Storage
+                  {t("secureStorage")}
                 </Text>
               </View>
             </View>
@@ -316,7 +426,7 @@ export default function DocumentVault({ navigation }) {
               <TextInput
                 value={searchQuery}
                 onChangeText={setSearchQuery}
-                placeholder="Search..."
+                placeholder={t("searchPlaceholder")}
                 placeholderTextColor="#94a3b8"
                 className="flex-1 text-slate-900 text-sm"
               />
@@ -345,11 +455,11 @@ export default function DocumentVault({ navigation }) {
           showsHorizontalScrollIndicator={false}
           className="px-4 pb-3"
         >
-          <View className="flex-row gap-2">
+        <View className="flex-row gap-2">
             <FilterChip
-              label="All Files"
-              active={activeFilter === "All Files"}
-              onPress={() => setActiveFilter("All Files")}
+              label={t("allFiles")}
+              active={activeFilter === null}
+              onPress={() => setActiveFilter(null)}
             />
             {allCategories.map((cat) => (
               <FilterChip
@@ -364,19 +474,99 @@ export default function DocumentVault({ navigation }) {
       </View>
 
       <ScrollView className="px-4">
-        {/* Recently Added */}
-        <SectionHeader
-          title={loading ? "Loading..." : "Recently Added"}
-          action={filteredDocuments.length ? "View History" : undefined}
-        />
 
-        {!filteredDocuments.length && !loading && (
+        {!pinVerified && (
+          <View className="mt-6 p-4 bg-white border border-slate-200 rounded-2xl">
+            <View className="flex-row items-center gap-3 mb-3">
+              <View className="h-10 w-10 rounded-lg bg-[#1152d4]/10 items-center justify-center">
+                <MaterialIcons name="lock" size={20} color="#1152d4" />
+              </View>
+              <Text className="text-base font-bold text-slate-900">
+                {pinMode === "verify"
+                  ? t("enterVaultPin")
+                  : pinMode === "create"
+                  ? t("setVaultPin")
+                  : t("resetVaultPin")}
+              </Text>
+            </View>
+
+            {pinMode === "reset" && (
+              <TextInput
+                value={accountPassword}
+                onChangeText={setAccountPassword}
+                secureTextEntry
+                placeholder={t("enterAccountPassword")}
+                className="border border-slate-300 rounded-lg px-3 py-2 mb-3"
+              />
+            )}
+
+            <TextInput
+              value={currentPin}
+              onChangeText={setCurrentPin}
+              keyboardType="number-pad"
+              maxLength={4}
+              secureTextEntry
+              placeholder="••••"
+              className="border border-slate-300 rounded-lg px-3 py-2 mb-3 text-center tracking-[4px] text-lg"
+            />
+
+            {(pinMode === "create" || pinMode === "reset") && (
+              <TextInput
+                value={confirmPin}
+                onChangeText={setConfirmPin}
+                keyboardType="number-pad"
+                maxLength={4}
+                secureTextEntry
+                placeholder={t("confirmPinPlaceholder")}
+                className="border border-slate-300 rounded-lg px-3 py-2 mb-3 text-center tracking-[4px] text-lg"
+              />
+            )}
+
+            <TouchableOpacity
+              onPress={
+                pinMode === "verify"
+                  ? handleVerifyPin
+                  : pinMode === "create"
+                  ? handleCreatePin
+                  : handleResetPin
+              }
+              className="mt-1 px-4 py-2 rounded-lg bg-[#1152d4] items-center"
+            >
+              <Text className="text-white font-semibold">
+                {pinMode === "verify"
+                  ? t("unlockVault")
+                  : pinMode === "create"
+                  ? t("savePin")
+                  : t("resetPin")}
+              </Text>
+            </TouchableOpacity>
+
+            {pinMode === "verify" && (
+              <TouchableOpacity
+                onPress={() => {
+                  setPinMode("reset");
+                  setCurrentPin("");
+                  setConfirmPin("");
+                  setAccountPassword("");
+                }}
+                className="mt-3"
+              >
+                <Text className="text-xs font-semibold text-[#1152d4]">
+                  {t("forgotPin")}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+
+        {pinVerified && !filteredDocuments.length && !loading && (
           <Text className="text-xs text-slate-500 mb-4">
-            No documents found. Try changing filters or add a new document using the + button.
+            {t("noDocumentsFound")}
           </Text>
         )}
 
-        {recentFiles.map((file) => (
+        {pinVerified &&
+          recentFiles.map((file) => (
           <FileItem
             key={file.id}
             icon={file.icon}
@@ -389,12 +579,12 @@ export default function DocumentVault({ navigation }) {
           />
         ))}
 
-        {allCategories.map((cat) => {
-          if (activeFilter !== "All Files" && activeFilter !== cat) return null;
+        {pinVerified && allCategories.map((cat) => {
+          if (activeFilter !== null && activeFilter !== cat) return null;
           const files = categorized.get(cat) || [];
           if (!files.length) return null;
-          const header = getCategoryHeader(cat);
 
+          const header = getCategoryHeader(cat, t);
           return (
             <CategorySection
               key={cat}
@@ -402,8 +592,8 @@ export default function DocumentVault({ navigation }) {
               color={header.color}
               title={cat}
               files={files}
+              t={t}
               onFilePress={(id) => {
-                const doc = filteredDocuments.find((d) => d.id === id);
                 if (doc) showFileActions(doc);
               }}
               onFileMore={(id) => {
@@ -430,19 +620,19 @@ export default function DocumentVault({ navigation }) {
         <View className="absolute inset-0 bg-black/40 items-center justify-center px-6">
           <View className="w-full bg-white rounded-2xl p-4">
             <Text className="text-base font-bold text-slate-900 mb-2">
-              Rename Document
+              {t("renameDocument")}
             </Text>
             <TextInput
               value={renameValue}
               onChangeText={setRenameValue}
-              placeholder="Enter new name"
+              placeholder={t("enterNewName")}
               className="border border-slate-300 rounded-lg px-3 py-2 mb-3"
             />
             <Text className="text-xs font-semibold text-slate-500 mb-1">
-              Category
+              {t("category")}
             </Text>
             <View className="flex-row flex-wrap gap-2 mb-2">
-              {["Personal IDs", "Property Docs", "Court Papers", "Other"].map(
+              {[t("personalIds"), t("propertyDocs"), t("courtPapers"), t("other")].map(
                 (cat) => (
                   <TouchableOpacity
                     key={cat}
@@ -472,7 +662,7 @@ export default function DocumentVault({ navigation }) {
             <TextInput
               value={renameCategory}
               onChangeText={setRenameCategory}
-              placeholder="Or type your own category (e.g. Land Case, School Docs)"
+              placeholder={t("orTypeCategory")}
               className="border border-slate-300 rounded-lg px-3 py-2 mb-3 text-xs"
             />
             <View className="flex-row justify-end gap-3">
@@ -483,7 +673,7 @@ export default function DocumentVault({ navigation }) {
                 }}
                 className="px-4 py-2 rounded-lg border border-slate-300"
               >
-                <Text className="text-slate-700 font-semibold">Cancel</Text>
+                <Text className="text-slate-700 font-semibold">{t("cancel")}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => {
@@ -494,13 +684,13 @@ export default function DocumentVault({ navigation }) {
                 }}
                 className="px-4 py-2 rounded-lg bg-red-500"
               >
-                <Text className="text-white font-semibold">Delete</Text>
+                <Text className="text-white font-semibold">{t("delete")}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={submitRename}
                 className="px-4 py-2 rounded-lg bg-[#1152d4]"
               >
-                <Text className="text-white font-semibold">Save</Text>
+                <Text className="text-white font-semibold">{t("save")}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -632,19 +822,25 @@ function pickColorForCategory(category) {
   }
 }
 
-function getCategoryHeader(category) {
-  switch (category) {
-    case "Personal IDs":
-      return { icon: "badge", color: "#3b82f6" };
-    case "Property Docs":
-      return { icon: "holiday-village", color: "#f97316" };
-    case "Court Papers":
-      return { icon: "gavel", color: "#9333ea" };
-    case "Other":
-      return { icon: "folder", color: "#64748b" };
-    default:
-      return { icon: "folder", color: "#0f172a" };
+function getCategoryHeader(category, t) {
+  const personalIds = t ? t("personalIds") : "Personal IDs";
+  const propertyDocs = t ? t("propertyDocs") : "Property Docs";
+  const courtPapers = t ? t("courtPapers") : "Court Papers";
+  const other = t ? t("other") : "Other";
+  
+  if (category === personalIds || category === "Personal IDs") {
+    return { icon: "badge", color: "#3b82f6" };
   }
+  if (category === propertyDocs || category === "Property Docs") {
+    return { icon: "holiday-village", color: "#f97316" };
+  }
+  if (category === courtPapers || category === "Court Papers") {
+    return { icon: "gavel", color: "#9333ea" };
+  }
+  if (category === other || category === "Other") {
+    return { icon: "folder", color: "#64748b" };
+  }
+  return { icon: "folder", color: "#0f172a" };
 }
 
 function formatSize(bytes) {

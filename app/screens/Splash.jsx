@@ -2,11 +2,13 @@ import { View, Text, Pressable } from "react-native";
 import { useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "../context/AuthContext";
+import { useTranslation } from "react-i18next";
 
 export default function Splash({ navigation }) {
   // const navigation = useNavigation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [checking, setChecking] = useState(false);
+  const { t } = useTranslation();
 
   const handleGetStarted = async () => {
     setChecking(true);
@@ -15,7 +17,7 @@ export default function Splash({ navigation }) {
 
     if (!isAuthenticated) {
       navigation.replace("Login");
-    } else if (!hasSelectedLanguage) {
+    } else if (!hasSelectedLanguage && !user?.language) {
       navigation.replace("Language");
     } else {
       navigation.replace("Home");
@@ -39,16 +41,14 @@ export default function Splash({ navigation }) {
 
         {/* Text Content */}
         <View className="items-center space-y-3">
-          <Text className="text-[#1152d4] text-3xl font-bold">
-            NyayaSahayak
-          </Text>
+          <Text className="text-[#1152d4] text-3xl font-bold">{t("appName")}</Text>
 
           <Text className="text-[#0d121b] text-[28px] font-bold text-center leading-tight px-4">
-            Understand Law in Simple Language
+            {t("understandLawSimple")}
           </Text>
 
           <Text className="text-[#4f7396] text-base text-center leading-relaxed max-w-[320px]">
-            Breaking down complex Indian legal codes into everyday terms for every citizen.
+            {t("splashSubtitle")}
           </Text>
         </View>
       </View>
@@ -61,12 +61,12 @@ export default function Splash({ navigation }) {
           className="h-14 rounded-xl items-center justify-center bg-[#1152d4]"
         >
           <Text className="text-white text-lg font-bold">
-            Get Started
+            {t("getStarted")}
           </Text>
         </Pressable>
 
         <Text className="text-center text-[#4f7396] text-sm font-medium mb-12 mt-3">
-          Legal Aid for a Digital India
+          {t("legalAidTagline")}
         </Text>
       </View>
 

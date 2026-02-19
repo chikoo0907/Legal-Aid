@@ -9,9 +9,11 @@ import {
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
+import { useTranslation } from "react-i18next";
 
 export default function Profile({ navigation }) {
   const { user, logout, loading } = useAuth();
+  const { t } = useTranslation();
 
   if (loading) {
     return (
@@ -24,7 +26,7 @@ export default function Profile({ navigation }) {
   if (!user) {
     return (
       <View className="flex-1 items-center justify-center">
-        <Text>No user data found.</Text>
+        <Text>{t("noUserDataFound")}</Text>
       </View>
     );
   }
@@ -53,7 +55,7 @@ export default function Profile({ navigation }) {
             </TouchableOpacity>
 
             <Text className="text-white text-lg font-semibold">
-              Profile
+              {t("profile")}
             </Text>
 
             <TouchableOpacity>
@@ -97,7 +99,7 @@ export default function Profile({ navigation }) {
             </Text>
 
             <Text className="text-white/70 text-sm mt-1">
-              Verified Member
+              {t("verifiedMember")}
             </Text>
           </View>
         </View>
@@ -106,9 +108,9 @@ export default function Profile({ navigation }) {
         <View className="px-6 -mt-10">
           <View className="bg-white rounded-3xl shadow-md overflow-hidden">
 
-            <InfoItem label="Full Name" value={user.name} />
-            <InfoItem label="Phone Number" value={user.phone} />
-            <InfoItem label="Email Address" value={user.email} isLast />
+            <InfoItem label={t("fullName")} value={user.name} />
+            <InfoItem label={t("phoneNumber")} value={user.phone} />
+            <InfoItem label={t("emailAddress")} value={user.email} isLast />
 
           </View>
         </View>
@@ -125,7 +127,7 @@ export default function Profile({ navigation }) {
               color="#ef4444"
             />
             <Text className="text-red-500 font-semibold ml-2">
-              Logout
+              {t("logout")}
             </Text>
           </TouchableOpacity>
         </View>
@@ -136,6 +138,7 @@ export default function Profile({ navigation }) {
 }
 
 function InfoItem({ label, value, isLast }) {
+  const { t } = useTranslation();
   return (
     <View
       className={`py-5 px-6 ${
@@ -146,7 +149,7 @@ function InfoItem({ label, value, isLast }) {
         {label}
       </Text>
       <Text className="text-slate-800 font-medium">
-        {value || "Not Provided"}
+        {value || t("notProvided")}
       </Text>
     </View>
   );

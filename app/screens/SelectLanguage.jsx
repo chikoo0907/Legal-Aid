@@ -1,28 +1,25 @@
-import { View, Text, Pressable, ScrollView } from "react-native";
+import { View, Text, Pressable, ScrollView, Alert } from "react-native";
 import { useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-const LANGUAGES = [
-  { id: "hi", label: "हिन्दी", sub: "Hindi" },
-  { id: "en", label: "English", sub: "English" },
-  { id: "mr", label: "मराठी", sub: "Marathi" },
-  { id: "ta", label: "தமிழ்", sub: "Tamil" },
-  { id: "bn", label: "বাংলা", sub: "Bengali" },
-  { id: "te", label: "తెలుగు", sub: "Telugu" },
-  { id: "gu", label: "ગુજરાતી", sub: "Gujarati" },
-  { id: "kn", label: "ಕನ್ನಡ", sub: "Kannada" },
-];
+import { useTranslation } from "react-i18next";
+import { useLanguage } from "../context/LanguageContext";
+import { useAuth } from "../context/AuthContext";
 
 export default function Language({ navigation }) {
+  const { t } = useTranslation();
+  const { supportedLanguages, setLanguage } = useLanguage();
+  const { user } = useAuth();
   const [selected, setSelected] = useState(null);
 
   const handleContinue = async () => {
     if (!selected) return;
-
-    await AsyncStorage.setItem("selectedLanguage", selected);
-    await AsyncStorage.setItem("hasSelectedLanguage", "true");
-
-    navigation.replace("Home");
+    try {
+      await setLanguage(selected);
+      // If the user is logged in, language has been stored in DB via LanguageContext.
+      // For non-auth flows, it is still stored locally.
+      navigation.replace("Home", { user });
+    } catch (e) {
+      Alert.alert(t("error"), t("saveLanguageFailed"));
+    }
   };
 
   return (
@@ -31,7 +28,7 @@ export default function Language({ navigation }) {
       {/* Header */}
       <View className="px-4 py-4 border-b border-[#e5e7eb]">
         <Text className="text-center text-lg font-bold text-[#0d121b]">
-          Select Language
+          {t("selectLanguage")}
         </Text>
       </View>
 
@@ -39,15 +36,15 @@ export default function Language({ navigation }) {
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
         <View className="px-6 py-8 items-center">
           <Text className="text-2xl font-bold text-[#0d121b] mb-2">
-            Choose your preferred language
+            {t("choosePreferredLanguage")}
           </Text>
           <Text className="text-[#4c669a] text-base text-center">
-            This will help us explain the law in a language you understand best.
+            {t("languageHelpsExplain")}
           </Text>
         </View>
 
         <View className="px-4 flex-row flex-wrap justify-between">
-          {LANGUAGES.map((lang) => {
+          {supportedLanguages.map((lang) => {
             const isSelected = selected === lang.id;
 
             return (
@@ -65,19 +62,17 @@ export default function Language({ navigation }) {
                 </View>
 
                 <Text className="text-lg font-bold text-[#0d121b]">
-                  {lang.label}
+                  {lang.nativeLabel}
                 </Text>
                 <Text className="text-sm text-[#4c669a]">
-                  {lang.sub}
+                  {lang.label}
                 </Text>
               </Pressable>
             );
           })}
         </View>
 
-        <Text className="text-center text-sm text-[#4c669a] py-6">
-          More languages coming soon
-        </Text>
+        <View className="py-6" />
       </ScrollView>
 
       {/* Bottom Button */}
@@ -89,7 +84,7 @@ export default function Language({ navigation }) {
             ${selected ? "bg-[#1152d4]" : "bg-[#bfcbe6]"}`}
         >
           <Text className="text-white text-base font-bold">
-            Continue / आगे बढ़ें
+            {t("continue")}
           </Text>
         </Pressable>
       </View>

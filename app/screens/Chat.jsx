@@ -16,13 +16,16 @@ import LanguageSelector from "../components/LanguageSelector";
 import { sendPrompt } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import VoiceOutput from "../components/VoiceOutput";
+import { useTranslation } from "react-i18next";
+import { useLanguage } from "../context/LanguageContext";
 
 export default function Chat({ route, navigation }) {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
-  const [language, setLanguage] = useState("EN");
+  const { language, setLanguage } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { t } = useTranslation();
 
   const flatListRef = useRef(null);
   const { user, setUser } = useAuth();
@@ -60,7 +63,7 @@ export default function Chat({ route, navigation }) {
         { id: Date.now().toString() + "-bot", text: reply, isUser: false },
       ]);
     } catch (e) {
-      setError("Something went wrong.");
+      setError(t("somethingWentWrong"));
     } finally {
       setLoading(false);
     }
@@ -77,15 +80,15 @@ export default function Chat({ route, navigation }) {
 
           <View style={{ marginLeft: 10 }}>
             <Text style={styles.userEmail}>{user?.email}</Text>
-            <View style={styles.onlineRow}>
+          <View style={styles.onlineRow}>
               <View style={styles.onlineDot} />
-              <Text style={styles.onlineText}>Online</Text>
+              <Text style={styles.onlineText}>{t("online")}</Text>
             </View>
           </View>
         </View>
 
         <View style={styles.langBadge}>
-          <Text style={styles.langText}>{language}</Text>
+          <Text style={styles.langText}>{language.toUpperCase()}</Text>
         </View>
       </View>
 
@@ -105,14 +108,14 @@ export default function Chat({ route, navigation }) {
           renderItem={({ item }) =>
             item.isUser ? (
               <View style={styles.userWrapper}>
-                <Text style={styles.senderLabel}>You</Text>
+                <Text style={styles.senderLabel}>{t("you")}</Text>
                 <View style={styles.userBubble}>
                   <Text style={styles.userText}>{item.text}</Text>
                 </View>
               </View>
             ) : (
               <View style={styles.botWrapper}>
-                <Text style={styles.senderLabel}>NyayaSahayak</Text>
+                <Text style={styles.senderLabel}>{t("appName")}</Text>
                 <View style={styles.botBubble}>
                   <Text style={styles.botText}>{item.text}</Text>
                 </View>
@@ -122,10 +125,10 @@ export default function Chat({ route, navigation }) {
           ListEmptyComponent={
             <View style={styles.emptyState}>
               <Text style={styles.emptyText}>
-                Ask me about your legal rights 🇮🇳
+                {t("chatEmpty1")} 🇮🇳
               </Text>
               <Text style={styles.emptyText}>
-                Send Hi to start chatting
+                {t("chatEmpty2")}
               </Text>
             </View>
           }
@@ -134,7 +137,7 @@ export default function Chat({ route, navigation }) {
         {loading && (
           <View style={styles.loadingRow}>
             <ActivityIndicator size="small" color="#1152d4" />
-            <Text style={styles.loadingText}>Thinking…</Text>
+            <Text style={styles.loadingText}>{t("thinking")}</Text>
           </View>
         )}
 
@@ -147,7 +150,7 @@ export default function Chat({ route, navigation }) {
               <TextInput
                 value={input}
                 onChangeText={setInput}
-                placeholder="Ask about your rights..."
+                placeholder={t("askAboutRightsPlaceholder")}
                 style={styles.input}
                 multiline
               />
@@ -171,7 +174,7 @@ export default function Chat({ route, navigation }) {
           </View>
 
           <Text style={styles.disclaimer}>
-            NyayaSahayak provides legal information, not legal advice.
+            {t("chatDisclaimer")}
           </Text>
         </View>
       </KeyboardAvoidingView>

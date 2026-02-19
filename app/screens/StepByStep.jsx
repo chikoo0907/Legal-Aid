@@ -1,9 +1,11 @@
 import { View, Text, FlatList, TouchableOpacity, TextInput } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { getStepCategories } from "../server/data/legalGuides/adapter";
+import { useTranslation } from "react-i18next";
 
 export default function StepByStep({ navigation }) {
   const STEP_CATEGORIES = getStepCategories();
+  const { t } = useTranslation();
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
@@ -39,18 +41,18 @@ export default function StepByStep({ navigation }) {
             <MaterialIcons name="arrow-back-ios" size={20} />
           </TouchableOpacity>
           <Text className="text-xl font-bold text-slate-900">
-            Step-by-Step Legal Help
+            {t("stepByStepHeader")}
           </Text>
         </View>
         <Text className="text-sm text-slate-500 mt-1">
-          Select a category to view simple guides
+          {t("stepByStepSubheader")}
         </Text>
       </View>
 
       {/* Search */}
       <View className="px-4 py-4">
         <TextInput
-          placeholder="Search legal categories"
+          placeholder={t("stepByStepSearchPlaceholder")}
           placeholderTextColor="#94A3B8"
           className="bg-white h-12 rounded-xl px-4 border border-slate-200"
         />

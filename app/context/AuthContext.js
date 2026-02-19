@@ -14,6 +14,7 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     initializeAuth();
@@ -33,13 +34,32 @@ export function AuthProvider({ children }) {
       setUser(null);
     } finally {
       setLoading(false);
+      setHydrated(true);
     }
   };
+
+  // Keep AsyncStorage in sync whenever the in‑memory user changes
+  useEffect(() => {
+    if (!hydrated) return;
+
+    const persistUser = async () => {
+      try {
+        if (user) {
+          await AsyncStorage.setItem("auth_user", JSON.stringify(user));
+        } else {
+          await AsyncStorage.removeItem("auth_user");
+        }
+      } catch (error) {
+        console.error("Error persisting auth user:", error);
+      }
+    };
+
+    persistUser();
+  }, [user, hydrated]);
 
   const login = async (userData) => {
     try {
       setUser(userData);
-      await AsyncStorage.setItem("auth_user", JSON.stringify(userData));
       return userData;
     } catch (error) {
       console.error("Error in login:", error);

@@ -28,9 +28,8 @@ router.post("/register", async (req, res) => {
       data: {
         email,
         password: hashedPassword,
-        name, 
+        name,
         phone,
-
       },
     });
 
@@ -40,6 +39,8 @@ router.post("/register", async (req, res) => {
       email: user.email,
       name: user.name,
       phone: user.phone,
+      language: user.language,
+      hasVaultPin: false,
     });
   } catch (error) {
     console.error(error);
@@ -57,6 +58,15 @@ router.post("/login", async (req, res) => {
     // 1. Find user by email only
     const user = await prisma.user.findUnique({
       where: { email },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        phone: true,
+        language: true,
+        password: true,
+        vaultPinHash: true,
+      },
     });
 
     if (!user) {
@@ -71,9 +81,11 @@ router.post("/login", async (req, res) => {
     }
 
     // 3. Return safe response
+    const { password: _pw, vaultPinHash, ...safeUser } = user;
+
     res.json({
-      id: user.id,
-      email: user.email,
+      ...safeUser,
+      hasVaultPin: !!vaultPinHash,
     });
   } catch (error) {
     console.error(error);

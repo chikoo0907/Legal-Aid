@@ -62,6 +62,43 @@ export async function register(data) {
   return res.data;
 }
 
+export async function getUser(userId) {
+  const res = await api.get(`/user/${userId}`);
+  return res.data;
+}
+
+export async function updateUserLanguage(userId, language) {
+  const res = await api.patch(`/user/${userId}/language`, { language });
+  return res.data;
+}
+
+// Vault PIN helpers
+export async function setVaultPin(userId, pin) {
+  const res = await api.post(`/user/${userId}/vault-pin`, { pin });
+  return res.data;
+}
+
+export async function verifyVaultPin(userId, pin) {
+  const res = await api.post(`/user/${userId}/vault-pin/verify`, { pin });
+  return res.data;
+}
+
+export async function resetVaultPin(userId, password, newPin) {
+  const res = await api.post(`/user/${userId}/vault-pin/reset`, {
+    password,
+    newPin,
+  });
+  return res.data;
+}
+
+// Generic Gemini-based translation middleware.
+// payload: string | object | array
+// language: "en" | "hi" | "mr" | "gu" | "pa" | "ta" | "te"
+export async function translatePayload(payload, language) {
+  const res = await api.post(`/translate`, { payload, language });
+  return res.data;
+}
+
 export async function uploadVaultDocument({ userId, uri, name, type, folderId }) {
   const formData = new FormData();
   formData.append("userId", userId);

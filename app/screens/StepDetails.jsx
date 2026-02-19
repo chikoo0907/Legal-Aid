@@ -1,8 +1,10 @@
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 export default function StepDetail({ route, navigation }) {
   const { category } = route.params;
+  const { t } = useTranslation();
 
   return (
     <View className="flex-1 bg-slate-50">
@@ -26,7 +28,7 @@ export default function StepDetail({ route, navigation }) {
 
         {/* Steps Section */}
         <Text className="text-lg font-bold text-slate-900 mt-6 mb-4">
-          Procedure Steps
+          {t("stepDetailsProcedureSteps")}
         </Text>
 
         {category.steps.map((step, index) => (
@@ -53,7 +55,7 @@ export default function StepDetail({ route, navigation }) {
 
         {/* Documents Section */}
         <Text className="text-lg font-bold text-slate-900 mt-6 mb-4">
-          Documents Required
+          {t("stepDetailsDocumentsRequired")}
         </Text>
 
         {category.documents.map((doc, index) => (
@@ -68,7 +70,7 @@ export default function StepDetail({ route, navigation }) {
             {doc.mandatory && (
               <View className="px-2 py-1 bg-red-100 rounded-full">
                 <Text className="text-xs text-red-600 font-semibold">
-                  Mandatory
+                  {t("stepDetailsMandatory")}
                 </Text>
               </View>
             )}
@@ -82,7 +84,7 @@ export default function StepDetail({ route, navigation }) {
       <View className="absolute bottom-0 left-0 right-0 bg-white p-4 border-t border-slate-200">
         <TouchableOpacity className="bg-blue-600 py-4 rounded-xl items-center">
           <Text className="text-white font-bold">
-            Download Templates
+            {t("stepDetailsDownloadTemplates")}
           </Text>
         </TouchableOpacity>
       </View>
