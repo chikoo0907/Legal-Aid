@@ -14,10 +14,13 @@ model User {
   password  String
   language  String   @default("en")
   vaultPinHash String?
+  role      String   @default("user") // "user" or "lawyer"
 
   chats     Chat[]
   documents Document[]
   folders   Folder[]
+  lawyer    Lawyer?
+  appointments Appointment[]
 
   createdAt DateTime @default(now())
 }
@@ -65,4 +68,58 @@ model Folder {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+model Lawyer {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  barCouncilNumber String
+  specialization  String?
+  experience      Int?     // years of experience
+  bio             String?
+  address         String?
+  city            String?
+  state           String?
+  pincode         String?
+  
+  // Verification documents
+  barCouncilCertificate Bytes?  // Bar Council registration certificate
+  idProof              Bytes?   // ID proof (Aadhar/PAN)
+  photo                Bytes?   // Profile photo
+  
+  // Verification status
+  isVerified     Boolean  @default(false)
+  verifiedAt     DateTime?
+  
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointments  Appointment[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+  @@index([isVerified])
+  @@index([city])
+  @@index([state])
+}
+
+model Appointment {
+  id          String   @id @default(uuid())
+  lawyerId    String
+  userId      String
+  status      String   @default("pending") // "pending", "completed", "cancelled"
+  appointmentDate DateTime?
+  reason      String?  // Reason for appointment
+  notes       String?  // Lawyer's notes
+  
+  lawyer      Lawyer   @relation(fields: [lawyerId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([lawyerId])
+  @@index([userId])
+  @@index([status])
+  @@index([appointmentDate])
 }

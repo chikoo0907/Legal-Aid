@@ -1,15 +1,61 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal, Pressable } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal, Pressable, ActivityIndicator } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "../context/LanguageContext";
+import { getLawyerAppointments, getLawyerByUserId } from "../services/api";
 
-export default function Home({ navigation, route }) {
+export default function LawyerHome({ navigation, route }) {
   const { user } = useAuth();
   const { t } = useTranslation();
   const { language, setLanguage, supportedLanguages } = useLanguage();
   const [langOpen, setLangOpen] = useState(false);
+  const [lawyerData, setLawyerData] = useState(null);
+  const [appointmentsCount, setAppointmentsCount] = useState({ pending: 0, completed: 0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadLawyerData();
+  }, [user]);
+
+  const loadLawyerData = async () => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // Get lawyer details by userId
+      const lawyer = await getLawyerByUserId(user.id);
+      setLawyerData(lawyer);
+
+      // Get appointment counts
+      const [pendingAppts, completedAppts] = await Promise.all([
+        getLawyerAppointments(lawyer.id, "pending"),
+        getLawyerAppointments(lawyer.id, "completed"),
+      ]);
+
+      setAppointmentsCount({
+        pending: pendingAppts?.length || 0,
+        completed: completedAppts?.length || 0,
+      });
+    } catch (error) {
+      console.error("Error loading lawyer data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color="#0f766e" />
+      </View>
+    );
+  }
+
+  const lawyerName = user?.name || lawyerData?.user?.name || "Lawyer";
 
   return (
     <View style={styles.container}>
@@ -21,7 +67,7 @@ export default function Home({ navigation, route }) {
               <Ionicons name="person" size={22} color="#2563eb" />
             </View>
           </TouchableOpacity>
-          <Text style={styles.title}>{t("appName")}</Text>
+          <Text style={styles.title}>{lawyerName}</Text>
         </View>
 
         <View style={styles.headerIcons}>
@@ -38,7 +84,7 @@ export default function Home({ navigation, route }) {
         {/* Greeting */}
         <View style={styles.greetingWrap}>
           <Text style={styles.greetingTitle}>{t("namaste")}</Text>
-          <Text style={styles.greetingText}>{t("homeGreeting")}</Text>
+          <Text style={styles.greetingText}>Welcome to your lawyer dashboard</Text>
           {user && (
             <Text style={styles.email}>{user.email}</Text>
           )}
@@ -67,68 +113,33 @@ export default function Home({ navigation, route }) {
 
         {/* Services */}
         <View style={styles.servicesWrap}>
-          <Text style={styles.servicesTitle}>{t("exploreServices")}</Text>
+          <Text style={styles.servicesTitle}>Manage Your Practice</Text>
 
           <View style={styles.grid}>
-            {/* Step By Step */}
+            {/* Appointments */}
             <TouchableOpacity
-              onPress={() => navigation.navigate("StepByStep")}
-              style={[styles.serviceCard, { backgroundColor: "#4f46e5" }]}
-            >
-              <MaterialCommunityIcons name="help" size={28} color="white" />
-              <Text style={styles.serviceTitle}>{t("stepByStep")}</Text>
-              <Text style={styles.serviceDescLight}>
-                {t("stepByStepDesc")}
-              </Text>
-            </TouchableOpacity>
-
-            {/* Documents Needed */}
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate("DocumentsNeeded")
-              }
+              onPress={() => navigation.navigate("Appointments")}
               style={[styles.serviceCard, { backgroundColor: "#2563eb" }]}
             >
-              <Ionicons name="document-text" size={28} color="white" />
-              <Text style={styles.serviceTitle}>{t("documentsNeeded")}</Text>
+              <Ionicons name="calendar" size={28} color="white" />
+              <Text style={styles.serviceTitle}>Appointments</Text>
               <Text style={styles.serviceDescLight}>
-                {t("documentsNeededDesc")}
+                {appointmentsCount.pending} pending
               </Text>
-            </TouchableOpacity>
-
-            {/* Vault */}
-            <TouchableOpacity
-              onPress={() => navigation.navigate("Vault")}
-              style={styles.serviceCardWhite}
-            >
-              <Ionicons name="folder-open" size={28} color="#2563eb" />
-              <Text style={styles.serviceTitleDark}>{t("documentVault")}</Text>
-              <Text style={styles.serviceDescDark}>
-                {t("documentVaultDesc")}
-              </Text>
-            </TouchableOpacity>
-
-            {/* Awareness */}
-            <TouchableOpacity
-              onPress={() => navigation.navigate("Awareness")}
-              style={styles.serviceCardWhite}
-            >
-              <Ionicons name="megaphone" size={28} color="#f97316" />
-              <Text style={styles.serviceTitleDark}>{t("awareness")}</Text>
-              <Text style={styles.serviceDescDark}>
-                {t("awarenessDesc")}
-              </Text>
-            </TouchableOpacity>
-
-            {/* Find Lawyers */}
-            <TouchableOpacity
-              onPress={() => navigation.navigate("Lawyers")}
-              style={[styles.serviceCard, { backgroundColor: "#d97706" }]}
-            >
-              <Ionicons name="briefcase" size={28} color="white" />
-              <Text style={styles.serviceTitle}>{t("findLawyers") || "Find Lawyers"}</Text>
               <Text style={styles.serviceDescLight}>
-                {t("findLawyersDesc") || "Connect with verified lawyers"}
+                {appointmentsCount.completed} completed
+              </Text>
+            </TouchableOpacity>
+
+            {/* Chat with Users */}
+            <TouchableOpacity
+              onPress={() => navigation.navigate("LawyerChat")}
+              style={[styles.serviceCard, { backgroundColor: "#0f766e" }]}
+            >
+              <Ionicons name="chatbubbles" size={28} color="white" />
+              <Text style={styles.serviceTitle}>Chat with Users</Text>
+              <Text style={styles.serviceDescLight}>
+                Connect with clients
               </Text>
             </TouchableOpacity>
           </View>
@@ -324,16 +335,6 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
 
-  serviceCardWhite: {
-    width: "48%",
-    backgroundColor: "#FFF",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-  },
-
   serviceTitle: {
     color: "#FFF",
     fontWeight: "bold",
@@ -342,18 +343,6 @@ const styles = StyleSheet.create({
 
   serviceDescLight: {
     color: "#E0E7FF",
-    fontSize: 12,
-    marginTop: 4,
-  },
-
-  serviceTitleDark: {
-    color: "#0f172a",
-    fontWeight: "bold",
-    marginTop: 10,
-  },
-
-  serviceDescDark: {
-    color: "#64748B",
     fontSize: 12,
     marginTop: 4,
   },

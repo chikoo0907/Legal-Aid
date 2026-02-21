@@ -7,7 +7,11 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Splash from "./screens/Splash";
 import Login from "./screens/Login";
 import Register from "./screens/Register";
+import RoleSelection from "./screens/RoleSelection";
+import LawyerRegister from "./screens/LawyerRegister";
+import Lawyers from "./screens/Lawyers";
 import Home from "./screens/Home";
+import LawyerHome from "./screens/LawyerHome";
 import Chat from "./screens/Chat";
 import Vault from "./screens/Vault";
 import DocumentViewer from "./screens/DocumentViewer";
@@ -17,6 +21,8 @@ import DocumentsNeeded from "./screens/DocumentsNeeded";
 import SelectLanguage from "./screens/SelectLanguage";
 import StepByStep from "./screens/StepByStep";
 import StepDetails from "./screens/StepDetails";
+import Appointments from "./screens/Appointments";
+import LawyerChat from "./screens/LawyerChat";
 
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { LanguageProvider } from "./context/LanguageContext";
@@ -47,8 +53,14 @@ function AppContent() {
       <Stack.Screen name="Profile" component={Profile} />
       <Stack.Screen name="Language" component={SelectLanguage} />
       <Stack.Screen name="Login" component={Login} />
+      <Stack.Screen name="RoleSelection" component={RoleSelection} />
       <Stack.Screen name="Register" component={Register} />
+      <Stack.Screen name="LawyerRegister" component={LawyerRegister} />
+      <Stack.Screen name="Lawyers" component={Lawyers} />
       <Stack.Screen name="Home" component={Home} />
+      <Stack.Screen name="LawyerHome" component={LawyerHome} />
+      <Stack.Screen name="Appointments" component={Appointments} />
+      <Stack.Screen name="LawyerChat" component={LawyerChat} />
 
       <Stack.Screen name="Chat" component={Chat} />
       <Stack.Screen name="KnowRights" component={KnowRights} />

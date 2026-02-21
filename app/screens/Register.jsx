@@ -12,7 +12,9 @@ import { useAuth } from "../context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
-export default function Register({ navigation }) {
+export default function Register({ navigation, route }) {
+  const role = route?.params?.role || "user";
+  
   // ✅ NEW: Added name & phone state
   const [name, setName] = useState("");        // 🔹 NEW
   const [phone, setPhone] = useState("");      // 🔹 NEW
@@ -30,7 +32,18 @@ export default function Register({ navigation }) {
 
   async function handleRegister() {
     try {
-      // ✅ UPDATED: Send name & phone to API
+      if (role === "lawyer") {
+        // Navigate to lawyer registration form
+        navigation.navigate("LawyerRegister", {
+          name,
+          email,
+          phone,
+          password,
+        });
+        return;
+      }
+
+      // Regular user registration
       const user = await apiRegister({
         name,
         email,

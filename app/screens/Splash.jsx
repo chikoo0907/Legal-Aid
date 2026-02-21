@@ -20,7 +20,12 @@ export default function Splash({ navigation }) {
     } else if (!hasSelectedLanguage && !user?.language) {
       navigation.replace("Language");
     } else {
-      navigation.replace("Home");
+      // Route lawyers to LawyerHome, regular users to Home
+      if (user?.role === "lawyer") {
+        navigation.replace("LawyerHome");
+      } else {
+        navigation.replace("Home");
+      }
     }
 
     setChecking(false);

@@ -101,7 +101,7 @@ export default function Login({ navigation }) {
             {t("newHere")}{" "}
             <Text
               className="text-blue-600 font-semibold"
-              onPress={() => navigation.navigate("Register")}
+              onPress={() => navigation.navigate("RoleSelection")}
             >
               {t("createAccount")}
             </Text>

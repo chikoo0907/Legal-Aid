@@ -142,3 +142,128 @@ export async function getDocumentById(id) {
   const res = await api.get(`/documents${id}`);
   return res.data;
 }
+
+// Lawyer registration
+export async function registerLawyer(data) {
+  const formData = new FormData();
+  
+  // Basic user info
+  formData.append("email", data.email);
+  formData.append("password", data.password);
+  formData.append("name", data.name);
+  formData.append("phone", data.phone || "");
+  
+  // Lawyer specific info
+  formData.append("barCouncilNumber", data.barCouncilNumber);
+  formData.append("specialization", data.specialization || "");
+  formData.append("experience", data.experience?.toString() || "");
+  formData.append("bio", data.bio || "");
+  formData.append("address", data.address || "");
+  formData.append("city", data.city || "");
+  formData.append("state", data.state || "");
+  formData.append("pincode", data.pincode || "");
+  
+  // Documents - use uri from image picker asset
+  if (data.barCouncilCertificate && data.barCouncilCertificate.uri) {
+    const filename = data.barCouncilCertificate.uri.split("/").pop() || "barCouncilCertificate.jpg";
+    formData.append("barCouncilCertificate", {
+      uri: data.barCouncilCertificate.uri,
+      name: filename,
+      type: data.barCouncilCertificate.mimeType || "image/jpeg",
+    });
+  }
+  
+  if (data.idProof && data.idProof.uri) {
+    const filename = data.idProof.uri.split("/").pop() || "idProof.jpg";
+    formData.append("idProof", {
+      uri: data.idProof.uri,
+      name: filename,
+      type: data.idProof.mimeType || "image/jpeg",
+    });
+  }
+  
+  if (data.photo && data.photo.uri) {
+    const filename = data.photo.uri.split("/").pop() || "photo.jpg";
+    formData.append("photo", {
+      uri: data.photo.uri,
+      name: filename,
+      type: data.photo.mimeType || "image/jpeg",
+    });
+  }
+
+  try {
+    console.log("Sending lawyer registration request to:", `${getApiBaseUrl()}/auth/register-lawyer`);
+    const res = await api.post(`/auth/register-lawyer`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      timeout: 30000, // 30 seconds timeout for file uploads
+    });
+    return res.data;
+  } catch (error) {
+    console.error("Lawyer registration API error:", error);
+    if (error.response) {
+      // Server responded with error
+      console.error("Response status:", error.response.status);
+      console.error("Response data:", error.response.data);
+      throw new Error(error.response.data?.error || error.response.data?.message || `Server error: ${error.response.status}`);
+    } else if (error.request) {
+      // Request made but no response
+      console.error("No response from server. Is the server running?");
+      throw new Error(`Cannot reach server at ${getApiBaseUrl()}. Make sure the server is running.`);
+    } else {
+      // Error setting up request
+      console.error("Request setup error:", error.message);
+      throw error;
+    }
+  }
+}
+
+// Get lawyers
+export async function getLawyers(params = {}) {
+  const { city = "", specialization = "", search = "" } = params;
+  const res = await api.get("/lawyers", {
+    params: { city, specialization, search },
+  });
+  return res.data;
+}
+
+// Get lawyer by ID
+export async function getLawyerById(id) {
+  const res = await api.get(`/lawyers/${id}`);
+  return res.data;
+}
+
+// Get lawyer by userId
+export async function getLawyerByUserId(userId) {
+  const res = await api.get(`/lawyers/by-user/${userId}`);
+  return res.data;
+}
+
+// Appointment functions
+export async function getLawyerAppointments(lawyerId, status) {
+  const params = status ? { status } : {};
+  const res = await api.get(`/appointments/lawyer/${lawyerId}`, { params });
+  return res.data;
+}
+
+export async function getUserAppointments(userId, status) {
+  const params = status ? { status } : {};
+  const res = await api.get(`/appointments/user/${userId}`, { params });
+  return res.data;
+}
+
+export async function createAppointment(data) {
+  const res = await api.post(`/appointments`, data);
+  return res.data;
+}
+
+export async function updateAppointment(id, data) {
+  const res = await api.patch(`/appointments/${id}`, data);
+  return res.data;
+}
+
+export async function getAppointmentById(id) {
+  const res = await api.get(`/appointments/${id}`);
+  return res.data;
+}
