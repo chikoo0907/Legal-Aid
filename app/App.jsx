@@ -23,6 +23,12 @@ import StepByStep from "./screens/StepByStep";
 import StepDetails from "./screens/StepDetails";
 import Appointments from "./screens/Appointments";
 import LawyerChat from "./screens/LawyerChat";
+import LawyerPendingVerification from "./screens/LawyerPendingVerification";
+import LawyerDetail from "./screens/LawyerDetail";
+import BookAppointment from "./screens/BookAppointment";
+import UserChatWithLawyer from "./screens/UserChatWithLawyer";
+import UserAppointments from "./screens/UserAppointments";
+import LawyerConversation from "./screens/LawyerConversation";
 
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { LanguageProvider } from "./context/LanguageContext";
@@ -59,8 +65,14 @@ function AppContent() {
       <Stack.Screen name="Lawyers" component={Lawyers} />
       <Stack.Screen name="Home" component={Home} />
       <Stack.Screen name="LawyerHome" component={LawyerHome} />
+      <Stack.Screen name="LawyerPendingVerification" component={LawyerPendingVerification} />
       <Stack.Screen name="Appointments" component={Appointments} />
       <Stack.Screen name="LawyerChat" component={LawyerChat} />
+      <Stack.Screen name="LawyerDetail" component={LawyerDetail} />
+      <Stack.Screen name="BookAppointment" component={BookAppointment} />
+      <Stack.Screen name="UserChatWithLawyer" component={UserChatWithLawyer} />
+      <Stack.Screen name="UserAppointments" component={UserAppointments} />
+      <Stack.Screen name="LawyerConversation" component={LawyerConversation} />
 
       <Stack.Screen name="Chat" component={Chat} />
       <Stack.Screen name="KnowRights" component={KnowRights} />

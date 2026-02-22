@@ -131,6 +131,18 @@ export default function Home({ navigation, route }) {
                 {t("findLawyersDesc") || "Connect with verified lawyers"}
               </Text>
             </TouchableOpacity>
+
+            {/* My Appointments */}
+            <TouchableOpacity
+              onPress={() => navigation.navigate("UserAppointments")}
+              style={[styles.serviceCard, { backgroundColor: "#0f766e" }]}
+            >
+              <Ionicons name="calendar" size={28} color="white" />
+              <Text style={styles.serviceTitle}>My Appointments</Text>
+              <Text style={styles.serviceDescLight}>
+                View your booked appointments
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
 

@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
-import { getLawyerAppointments, updateAppointment } from "../services/api";
+import { getUserAppointments } from "../services/api";
 
-export default function Appointments({ navigation }) {
+export default function UserAppointments({ navigation }) {
   const { user } = useAuth();
   const [appointments, setAppointments] = useState([]);
   const [filter, setFilter] = useState("all"); // "all", "pending", "completed"
@@ -15,33 +15,27 @@ export default function Appointments({ navigation }) {
   }, [filter, user]);
 
   const loadAppointments = async () => {
-    if (!user?.id || user?.role !== "lawyer" || !user?.lawyer?.id) {
+    if (!user?.id) {
       setLoading(false);
-      console.warn("Appointments screen opened for non-lawyer user or missing lawyer profile");
       return;
     }
 
     try {
       setLoading(true);
-
-      const lawyerId = user.lawyer.id;
       let data = [];
-
+      
       if (filter === "all") {
         const [pending, completed] = await Promise.all([
-          getLawyerAppointments(lawyerId, "pending"),
-          getLawyerAppointments(lawyerId, "completed"),
+          getUserAppointments(user.id, "pending"),
+          getUserAppointments(user.id, "completed"),
         ]);
         data = [...(pending || []), ...(completed || [])];
       } else {
-        data = await getLawyerAppointments(lawyerId, filter);
+        data = await getUserAppointments(user.id, filter);
       }
 
-      // Sort by appointment date (pending first, then by date)
+      // Sort by appointment date
       data.sort((a, b) => {
-        if (a.status !== b.status) {
-          return a.status === "pending" ? -1 : 1;
-        }
         if (a.appointmentDate && b.appointmentDate) {
           return new Date(a.appointmentDate) - new Date(b.appointmentDate);
         }
@@ -54,17 +48,6 @@ export default function Appointments({ navigation }) {
       Alert.alert("Error", "Failed to load appointments");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleUpdateStatus = async (appointmentId, newStatus) => {
-    try {
-      await updateAppointment(appointmentId, { status: newStatus });
-      Alert.alert("Success", `Appointment marked as ${newStatus}`);
-      loadAppointments();
-    } catch (error) {
-      console.error("Error updating appointment:", error);
-      Alert.alert("Error", "Failed to update appointment");
     }
   };
 
@@ -83,7 +66,7 @@ export default function Appointments({ navigation }) {
   if (loading) {
     return (
       <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
-        <ActivityIndicator size="large" color="#0f766e" />
+        <ActivityIndicator size="large" color="#2563eb" />
       </View>
     );
   }
@@ -95,7 +78,7 @@ export default function Appointments({ navigation }) {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#0f172a" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Appointments</Text>
+        <Text style={styles.headerTitle}>My Appointments</Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -127,18 +110,30 @@ export default function Appointments({ navigation }) {
           <View style={styles.emptyContainer}>
             <Ionicons name="calendar-outline" size={64} color="#CBD5E1" />
             <Text style={styles.emptyText}>No appointments found</Text>
+            <TouchableOpacity
+              style={styles.findLawyerButton}
+              onPress={() => navigation.navigate("Lawyers")}
+            >
+              <Text style={styles.findLawyerButtonText}>Find a Lawyer</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           appointments.map((appointment) => (
             <View key={appointment.id} style={styles.appointmentCard}>
               <View style={styles.appointmentHeader}>
-                <View style={styles.userInfo}>
+                <View style={styles.lawyerInfo}>
                   <View style={styles.avatar}>
-                    <Ionicons name="person" size={20} color="#2563eb" />
+                    <Ionicons name="briefcase" size={20} color="#2563eb" />
                   </View>
                   <View>
-                    <Text style={styles.userName}>{appointment.user?.name || "User"}</Text>
-                    <Text style={styles.userEmail}>{appointment.user?.email}</Text>
+                    <Text style={styles.lawyerName}>
+                      {appointment.lawyer?.user?.name || "Lawyer"}
+                    </Text>
+                    {appointment.lawyer?.specialization && (
+                      <Text style={styles.specialization}>
+                        {appointment.lawyer.specialization}
+                      </Text>
+                    )}
                   </View>
                 </View>
                 <View
@@ -173,31 +168,21 @@ export default function Appointments({ navigation }) {
                     <Text style={styles.detailText}>{appointment.reason}</Text>
                   </View>
                 )}
-                {appointment.user?.phone && (
-                  <View style={styles.detailRow}>
-                    <Ionicons name="call" size={16} color="#64748B" />
-                    <Text style={styles.detailText}>{appointment.user.phone}</Text>
-                  </View>
-                )}
               </View>
 
-              {appointment.status === "pending" && (
-                <View style={styles.actionButtons}>
-                  <TouchableOpacity
-                    style={[styles.actionButton, styles.completeButton]}
-                    onPress={() => handleUpdateStatus(appointment.id, "completed")}
-                  >
-                    <Text style={styles.completeButtonText}>Mark Complete</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-
-              {appointment.notes && (
-                <View style={styles.notesContainer}>
-                  <Text style={styles.notesLabel}>Notes:</Text>
-                  <Text style={styles.notesText}>{appointment.notes}</Text>
-                </View>
-              )}
+              <TouchableOpacity
+                style={styles.chatButton}
+                onPress={() => {
+                  if (appointment.lawyer) {
+                    navigation.navigate("UserChatWithLawyer", {
+                      lawyer: appointment.lawyer,
+                    });
+                  }
+                }}
+              >
+                <Ionicons name="chatbubble" size={16} color="#2563eb" />
+                <Text style={styles.chatButtonText}>Chat with Lawyer</Text>
+              </TouchableOpacity>
             </View>
           ))
         )}
@@ -267,6 +252,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#94A3B8",
     marginTop: 16,
+    marginBottom: 24,
+  },
+  findLawyerButton: {
+    backgroundColor: "#2563eb",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  findLawyerButtonText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontWeight: "600",
   },
   appointmentCard: {
     backgroundColor: "#FFF",
@@ -282,7 +279,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     marginBottom: 12,
   },
-  userInfo: {
+  lawyerInfo: {
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
@@ -296,12 +293,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginRight: 12,
   },
-  userName: {
+  lawyerName: {
     fontSize: 16,
     fontWeight: "bold",
     color: "#0f172a",
   },
-  userEmail: {
+  specialization: {
     fontSize: 12,
     color: "#64748B",
     marginTop: 2,
@@ -332,6 +329,7 @@ const styles = StyleSheet.create({
   appointmentDetails: {
     marginTop: 8,
     gap: 8,
+    marginBottom: 12,
   },
   detailRow: {
     flexDirection: "row",
@@ -342,39 +340,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#475569",
   },
-  actionButtons: {
+  chatButton: {
     flexDirection: "row",
-    marginTop: 12,
-    gap: 8,
-  },
-  actionButton: {
-    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 10,
     borderRadius: 8,
-    alignItems: "center",
+    backgroundColor: "#EFF6FF",
+    gap: 6,
+    marginTop: 8,
   },
-  completeButton: {
-    backgroundColor: "#059669",
-  },
-  completeButtonText: {
-    color: "#FFF",
+  chatButtonText: {
+    color: "#2563eb",
     fontWeight: "600",
     fontSize: 14,
-  },
-  notesContainer: {
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#E2E8F0",
-  },
-  notesLabel: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#64748B",
-    marginBottom: 4,
-  },
-  notesText: {
-    fontSize: 14,
-    color: "#475569",
   },
 });

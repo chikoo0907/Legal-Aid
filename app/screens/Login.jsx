@@ -15,21 +15,64 @@ import { useTranslation } from "react-i18next";
 export default function Login({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { login, isAuthenticated, loading } = useAuth();
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const { login, isAuthenticated, loading, user } = useAuth();
   const { t } = useTranslation();
 
   useEffect(() => {
-    if (!loading && isAuthenticated) {
-      navigation.replace("Home");
+    // Only redirect if user is already logged in (not during active login)
+    if (!loading && isAuthenticated && user && !isLoggingIn) {
+      // Route based on user role - this handles when user is already logged in
+      if (user?.role === "lawyer") {
+        if (user?.lawyer?.isVerified) {
+          navigation.replace("LawyerHome");
+        } else {
+          navigation.replace("LawyerPendingVerification");
+        }
+      } else {
+        navigation.replace("Home");
+      }
     }
-  }, [isAuthenticated, loading]);
+  }, [isAuthenticated, loading, user, isLoggingIn]);
 
   async function handleLogin() {
     try {
-      const user = await apiLogin(email, password);
-      await login(user);
-      navigation.replace("Home", { user });
+      setIsLoggingIn(true);
+      const userData = await apiLogin(email, password);
+      console.log("Login response:", JSON.stringify(userData, null, 2));
+      
+      // Route based on user role BEFORE updating auth state
+      // This prevents useEffect from interfering
+      console.log("User role:", userData?.role);
+      console.log("Lawyer data:", userData?.lawyer);
+      console.log("Is verified:", userData?.lawyer?.isVerified);
+      
+      let targetRoute = "Home";
+      if (userData?.role === "lawyer") {
+        if (userData?.lawyer?.isVerified) {
+          console.log("Routing to LawyerHome");
+          targetRoute = "LawyerHome";
+        } else {
+          console.log("Routing to LawyerPendingVerification");
+          targetRoute = "LawyerPendingVerification";
+        }
+      } else {
+        console.log("Routing to Home");
+        targetRoute = "Home";
+      }
+      
+      // Update auth state
+      await login(userData);
+      
+      // Use reset to clear navigation stack and prevent redirects
+      navigation.reset({
+        index: 0,
+        routes: [{ name: targetRoute }],
+      });
+      setIsLoggingIn(false);
     } catch (e) {
+      console.error("Login error:", e);
+      setIsLoggingIn(false);
       Alert.alert(t("loginFailed"), t("invalidCredentials"));
     }
   }

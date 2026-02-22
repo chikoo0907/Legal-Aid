@@ -109,11 +109,7 @@ export default function Lawyers({ navigation }) {
               key={lawyer.id}
               style={styles.lawyerCard}
               onPress={() => {
-                // For now, just show an alert. You can create a LawyerDetail screen later
-                Alert.alert(
-                  lawyer.user?.name || "Lawyer",
-                  `${lawyer.specialization ? `Specialization: ${lawyer.specialization}\n` : ""}${lawyer.experience ? `Experience: ${lawyer.experience} years\n` : ""}${lawyer.bio || ""}${lawyer.city && lawyer.state ? `\n\nLocation: ${lawyer.city}, ${lawyer.state}` : ""}${lawyer.user?.phone ? `\nPhone: ${lawyer.user.phone}` : ""}${lawyer.user?.email ? `\nEmail: ${lawyer.user.email}` : ""}`
-                );
+                navigation.navigate("LawyerDetail", { lawyer });
               }}
             >
               <View style={styles.lawyerHeader}>

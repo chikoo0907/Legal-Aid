@@ -20,10 +20,17 @@ export default function Splash({ navigation }) {
     } else if (!hasSelectedLanguage && !user?.language) {
       navigation.replace("Language");
     } else {
-      // Route lawyers to LawyerHome, regular users to Home
+      // Route based on user role and verification status
       if (user?.role === "lawyer") {
-        navigation.replace("LawyerHome");
+        // Check if lawyer is verified
+        if (user?.lawyer?.isVerified) {
+          navigation.replace("LawyerHome");
+        } else {
+          // Lawyer not verified - show pending screen
+          navigation.replace("LawyerPendingVerification");
+        }
       } else {
+        // Regular user
         navigation.replace("Home");
       }
     }

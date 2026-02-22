@@ -92,10 +92,18 @@ router.post("/login", async (req, res) => {
     // 3. Return safe response
     const { password: _pw, vaultPinHash, ...safeUser } = user;
 
-    res.json({
+    // Ensure lawyer data is properly included
+    const response = {
       ...safeUser,
       hasVaultPin: !!vaultPinHash,
-    });
+    };
+
+    // Log for debugging
+    console.log("Login response for user:", user.email);
+    console.log("Role:", user.role);
+    console.log("Lawyer data:", user.lawyer);
+
+    res.json(response);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Login failed" });

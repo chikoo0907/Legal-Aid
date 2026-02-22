@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
-import { getLawyerAppointments, getLawyerByUserId } from "../services/api";
+import { getLawyerAppointments } from "../services/api";
 
 export default function LawyerChat({ navigation }) {
   const { user } = useAuth();
@@ -14,26 +14,21 @@ export default function LawyerChat({ navigation }) {
   }, [user]);
 
   const loadAppointments = async () => {
-    if (!user?.id) {
+    if (!user?.id || user?.role !== "lawyer" || !user?.lawyer?.id) {
       setLoading(false);
+      console.warn("LawyerChat opened for non-lawyer user or missing lawyer profile");
       return;
     }
 
     try {
       setLoading(true);
-      
-      // First get lawyer by userId
-      const lawyer = await getLawyerByUserId(user.id);
-      
-      if (!lawyer?.id) {
-        setLoading(false);
-        return;
-      }
-      
+
+      const lawyerId = user.lawyer.id;
+
       // Get all appointments to show users the lawyer can chat with
       const [pending, completed] = await Promise.all([
-        getLawyerAppointments(lawyer.id, "pending"),
-        getLawyerAppointments(lawyer.id, "completed"),
+        getLawyerAppointments(lawyerId, "pending"),
+        getLawyerAppointments(lawyerId, "completed"),
       ]);
       
       const allAppointments = [...(pending || []), ...(completed || [])];
@@ -65,14 +60,11 @@ export default function LawyerChat({ navigation }) {
     }
   };
 
-  const handleChatWithUser = (userId, userName) => {
-    // Navigate to chat screen with user context
-    // You may need to create a separate chat screen for lawyer-user communication
-    // For now, we'll use the existing Chat screen
-    navigation.navigate("Chat", { 
-      userId, 
-      userName,
-      isLawyerChat: true 
+  const handleChatWithUser = (userData) => {
+    // Navigate to dedicated lawyer-user conversation screen (no AI)
+    navigation.navigate("LawyerConversation", {
+      user: userData,
+      lawyerId: user?.lawyer?.id,
     });
   };
 
@@ -110,7 +102,7 @@ export default function LawyerChat({ navigation }) {
             <TouchableOpacity
               key={userData.userId}
               style={styles.userCard}
-              onPress={() => handleChatWithUser(userData.userId, userData.userName)}
+              onPress={() => handleChatWithUser(userData)}
             >
               <View style={styles.userInfo}>
                 <View style={styles.avatar}>

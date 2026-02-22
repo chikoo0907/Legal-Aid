@@ -4,7 +4,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "../context/LanguageContext";
-import { getLawyerAppointments, getLawyerByUserId } from "../services/api";
+import { getLawyerAppointments, getLawyerById } from "../services/api";
 
 export default function LawyerHome({ navigation, route }) {
   const { user } = useAuth();
@@ -16,18 +16,58 @@ export default function LawyerHome({ navigation, route }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadLawyerData();
+    // Wait a bit for user state to be fully updated after login
+    if (!user) {
+      return;
+    }
+    
+    // Small delay to ensure state is updated
+    const timer = setTimeout(() => {
+      loadLawyerData();
+    }, 200);
+    
+    return () => clearTimeout(timer);
   }, [user]);
 
   const loadLawyerData = async () => {
+    console.log("LawyerHome - loadLawyerData called");
+    console.log("User data:", JSON.stringify(user, null, 2));
+    
+    // Only verified lawyers should hit this screen
     if (!user?.id) {
+      console.warn("LawyerHome: No user ID");
       setLoading(false);
+      navigation.replace("Home");
+      return;
+    }
+    
+    if (user?.role !== "lawyer") {
+      console.warn("LawyerHome: User is not a lawyer, role is:", user?.role);
+      setLoading(false);
+      navigation.replace("Home");
+      return;
+    }
+    
+    if (!user?.lawyer?.id) {
+      console.warn("LawyerHome: Missing lawyer.id. User lawyer data:", user?.lawyer);
+      setLoading(false);
+      navigation.replace("Home");
       return;
     }
 
+    // Check if lawyer is verified
+    if (!user?.lawyer?.isVerified) {
+      console.warn("LawyerHome: Lawyer not verified");
+      setLoading(false);
+      navigation.replace("LawyerPendingVerification");
+      return;
+    }
+    
+    console.log("LawyerHome: All checks passed, loading lawyer data");
+
     try {
-      // Get lawyer details by userId
-      const lawyer = await getLawyerByUserId(user.id);
+      // Get lawyer details by lawyerId from the logged‑in user
+      const lawyer = await getLawyerById(user.lawyer.id);
       setLawyerData(lawyer);
 
       // Get appointment counts

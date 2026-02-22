@@ -267,3 +267,28 @@ export async function getAppointmentById(id) {
   const res = await api.get(`/appointments/${id}`);
   return res.data;
 }
+
+export async function checkAppointmentSlot(lawyerId, appointmentDate) {
+  const res = await api.get(`/appointments/check-slot`, {
+    params: { lawyerId, appointmentDate },
+  });
+  return res.data;
+}
+
+// Lawyer-User chat messages
+export async function getLawyerUserMessages(lawyerId, userId) {
+  const res = await api.get(`/messages`, {
+    params: { lawyerId, userId },
+  });
+  return res.data;
+}
+
+export async function sendLawyerUserMessage(lawyerId, userId, sender, message) {
+  const res = await api.post(`/messages`, {
+    lawyerId,
+    userId,
+    sender,
+    message,
+  });
+  return res.data;
+}

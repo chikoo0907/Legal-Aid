@@ -11,6 +11,7 @@ import translate from "./routes/translate.js";
 import lawyers from "./routes/lawyers.js";
 import admin from "./routes/admin.js";
 import appointments from "./routes/appointments.js";
+import messages from "./routes/messages.js";
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.use("/translate", translate);
 app.use("/lawyers", lawyers);
 app.use("/admin", admin);
 app.use("/appointments", appointments);
+app.use("/messages", messages);
 
 // Health check
 app.get("/", (req, res) => {

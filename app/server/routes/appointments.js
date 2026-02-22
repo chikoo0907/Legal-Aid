@@ -84,6 +84,53 @@ router.get("/user/:userId", async (req, res) => {
   }
 });
 
+// Helper: round to 30-min slot start
+function getSlotStart(date) {
+  const d = new Date(date);
+  const mins = d.getMinutes();
+  const roundedMins = Math.floor(mins / 30) * 30;
+  d.setMinutes(roundedMins, 0, 0);
+  return d;
+}
+
+// Check if a time slot is available for a lawyer
+router.get("/check-slot", async (req, res) => {
+  try {
+    const { lawyerId, appointmentDate } = req.query;
+
+    if (!lawyerId || !appointmentDate) {
+      return res.status(400).json({ error: "lawyerId and appointmentDate are required" });
+    }
+
+    const slotStart = getSlotStart(new Date(appointmentDate));
+    const slotEnd = new Date(slotStart);
+    slotEnd.setMinutes(slotStart.getMinutes() + 30, 0, 0);
+
+    // Find overlapping appointments (same lawyer, same 30-min slot)
+    const overlapping = await prisma.appointment.findMany({
+      where: {
+        lawyerId,
+        status: { not: "cancelled" },
+        appointmentDate: {
+          not: null,
+          gte: slotStart,
+          lt: slotEnd,
+        },
+      },
+    });
+
+    res.json({
+      available: overlapping.length === 0,
+      message: overlapping.length > 0
+        ? "This time slot is already booked. Please select another date or time."
+        : "Slot available",
+    });
+  } catch (error) {
+    console.error("Error checking slot:", error);
+    res.status(500).json({ error: "Failed to check slot availability" });
+  }
+});
+
 // Create a new appointment
 router.post("/", async (req, res) => {
   try {
@@ -91,6 +138,31 @@ router.post("/", async (req, res) => {
 
     if (!lawyerId || !userId) {
       return res.status(400).json({ error: "Lawyer ID and User ID are required" });
+    }
+
+    // Check slot availability before creating
+    if (appointmentDate) {
+      const slotStart = getSlotStart(new Date(appointmentDate));
+      const slotEnd = new Date(slotStart);
+      slotEnd.setMinutes(slotStart.getMinutes() + 30, 0, 0);
+
+      const overlapping = await prisma.appointment.findMany({
+        where: {
+          lawyerId,
+          status: { not: "cancelled" },
+          appointmentDate: {
+            not: null,
+            gte: slotStart,
+            lt: slotEnd,
+          },
+        },
+      });
+
+      if (overlapping.length > 0) {
+        return res.status(400).json({
+          error: "This time slot is already booked. Please select another date or time.",
+        });
+      }
     }
 
     const appointment = await prisma.appointment.create({

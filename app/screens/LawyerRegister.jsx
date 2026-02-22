@@ -93,13 +93,19 @@ export default function LawyerRegister({ navigation, route }) {
 
       const user = await registerLawyer(lawyerData);
       await login(user);
+
       Alert.alert(
         t("registrationSubmitted") || "Registration Submitted",
-        t("lawyerVerificationPending") || "Your registration has been submitted. Your account will be activated after verification.",
+        t("lawyerVerificationPending") ||
+          "Your registration has been submitted. Your account will be activated after verification.",
         [
           {
             text: t("ok") || "OK",
-            onPress: () => navigation.replace("Home", { user }),
+            onPress: () =>
+              navigation.reset({
+                index: 0,
+                routes: [{ name: "LawyerPendingVerification" }],
+              }),
           },
         ]
       );

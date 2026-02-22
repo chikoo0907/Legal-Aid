@@ -123,3 +123,16 @@ model Appointment {
   @@index([status])
   @@index([appointmentDate])
 }
+
+model LawyerUserMessage {
+  id        String   @id @default(uuid())
+  lawyerId  String
+  userId    String
+  sender    String   // "lawyer" or "user"
+  message   String
+  
+  createdAt DateTime @default(now())
+
+  @@index([lawyerId, userId])
+  @@index([createdAt])
+}
