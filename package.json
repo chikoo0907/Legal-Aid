@@ -8,7 +8,9 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "list-pending": "node list-pending-lawyers.js",
+    "verify": "node verify-lawyer.js"
   },
   "dependencies": {
     "@chroma-core/default-embed": "^0.1.9",
@@ -30,6 +32,7 @@
     "expo-status-bar": "~3.0.9",
     "expo-video": "~3.0.15",
     "express": "^5.2.1",
+    "i": "^0.3.7",
     "i18next": "^25.8.11",
     "multer": "^2.0.2",
     "nativewind": "^4.2.1",
