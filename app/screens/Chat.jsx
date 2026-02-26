@@ -57,7 +57,7 @@ export default function Chat({ route, navigation }) {
     setLoading(true);
 
     try {
-      const reply = await sendPrompt(text, language);
+      const reply = await sendPrompt(text, language, user?.id);
       setMessages((prev) => [
         ...prev,
         { id: Date.now().toString() + "-bot", text: reply, isUser: false },

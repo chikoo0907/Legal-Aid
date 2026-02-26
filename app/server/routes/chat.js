@@ -1,6 +1,9 @@
 import express from "express";
+import { PrismaClient } from "@prisma/client";
 import { queryRag } from "../rag.js";
 import axios from "axios";
+
+const prisma = new PrismaClient();
 const router = express.Router();
 
 
@@ -54,6 +57,15 @@ function enforce7to10Lines(text) {
   const raw = cleanToAnswerOnly(text);
   let lines = raw.split("\n").map((l) => l.trim()).filter(Boolean);
 
+  // If the model already returned a structured legal answer with sections,
+  // keep the structure as-is (no line slicing).
+  const hasSections = lines.some((l) =>
+    /^(Legal Information|Latest Updates|Simplified Explanation|Important Note|Disclaimer)\b/i.test(l)
+  );
+  if (hasSections) {
+    return raw;
+  }
+
   // If model returns a paragraph, split into sentence-ish lines
   if (lines.length < 7) {
     const para = lines.join(" ");
@@ -63,11 +75,13 @@ function enforce7to10Lines(text) {
       .filter(Boolean);
   }
 
-  // Hard enforce 7–10
+  // Hard enforce 7–10 for simple answers
   if (lines.length > 10) lines = lines.slice(0, 10);
   while (lines.length < 7 && lines.length > 0) {
-    // pad by splitting longer lines
-    const longestIdx = lines.reduce((best, _, i) => (lines[i].length > lines[best].length ? i : best), 0);
+    const longestIdx = lines.reduce(
+      (best, _, i) => (lines[i].length > lines[best].length ? i : best),
+      0
+    );
     const l = lines[longestIdx];
     if (l.length < 80) break;
     const mid = Math.floor(l.length / 2);
@@ -127,7 +141,7 @@ const isNonLegalQuestion = (prompt, ragContext) => {
 
 router.post("/", async (req, res) => {
   try {
-    const { prompt, language = "en", searchOnly } = req.body;
+    const { prompt, language = "en", searchOnly, userId } = req.body;
 
     if (!prompt || typeof prompt !== "string") {
       return res.status(400).json({ error: "Missing prompt" });
@@ -153,9 +167,13 @@ router.post("/", async (req, res) => {
       });
     }
 
-    const rag = await queryRag(prompt, parseInt(process.env.RAG_TOP_K_RESULTS || "5", 10), {
-      language,
-    });
+    const rag = await queryRag(
+      prompt,
+      parseInt(process.env.RAG_TOP_K_RESULTS || "5", 10),
+      {
+        language,
+      }
+    );
 
     console.log(`[Chat] RAG result - context length: ${rag.context?.length || 0}, sources: ${rag.sources?.length || 0}`);
 
@@ -190,15 +208,36 @@ router.post("/", async (req, res) => {
     }
 
     const languageName = rag?.metadata?.languageLabel || language;
-    const finalContext = `Use ONLY the LEGAL CONTEXT below to answer the USER QUESTION.
+    const finalContext = `You are a Legal Aid Assistant.
 
-Output rules (must follow):
-- Write ONLY the answer (no greeting, no intro, no headings, no disclaimers)
-- Exactly 7 to 10 lines total (use line breaks)
-- Simple, easy language
-- Write in ${languageName}
+You must follow ALL of these rules:
+1. Use ONLY the information provided in the CONTEXT (Chroma database + any web search results the model retrieves).
+2. Do NOT invent or guess new legal facts, sections, or case outcomes.
+3. If required information is not present in the CONTEXT, clearly say: "Information not available in the Legal Aid database."
+4. Keep the tone professional but simple and easy for a common person to understand.
+5. Always include a clear legal disclaimer at the end.
 
-LEGAL CONTEXT:
+STRUCTURE THE ANSWER EXACTLY LIKE THIS, USING POINTS:
+
+Legal Information:
+- Bullet points summarising the key legal rules, sections, or principles that are directly supported by the CONTEXT.
+
+Latest Updates (if available):
+- If the CONTEXT or web results mention recent changes, amendments, or new judgments, summarise them in 1–3 bullet points.
+- If nothing is found, write: "No specific recent updates were found in the available information."
+
+Simplified Explanation:
+- 2–5 short bullet points explaining the situation in very simple language for a normal user.
+
+Important Note:
+- 1–3 bullet points with cautions, conditions, or things the user should be careful about, based ONLY on the CONTEXT.
+
+Disclaimer:
+- A short sentence like: "This is general legal information based on the available sources, not a substitute for advice from a qualified lawyer."
+
+Write the full answer in ${languageName}.
+
+CONTEXT (from Legal Aid database and any web search grounding):
 ${rag.context}
 
 USER QUESTION:
@@ -217,7 +256,9 @@ ${prompt}`;
         try {
           response = await axios.post(
             `https://generativelanguage.googleapis.com/${apiVersion}/models/${m}:generateContent`,
-            { contents: [{ parts: [{ text: finalContext }] }] },
+            {
+              contents: [{ parts: [{ text: finalContext }] }],
+            },
             { params: { key: apiKey } }
           );
           lastErr = null;
@@ -239,8 +280,25 @@ ${prompt}`;
       text = fallbackFromContext(rag.context);
     }
 
+    const finalText = enforce7to10Lines(text);
+
+    // Persist chat if a valid userId is provided
+    if (userId) {
+      try {
+        await prisma.chat.create({
+          data: {
+            userId,
+            message: prompt,
+            response: finalText,
+          },
+        });
+      } catch (e) {
+        console.error("[Chat] Failed to save chat record", e?.message || e);
+      }
+    }
+
     res.json({
-      text: enforce7to10Lines(text),
+      text: finalText,
       sources: rag.sources,
       confidence: rag.confidence,
       metadata: { language: language || "en" },

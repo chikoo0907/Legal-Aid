@@ -15,10 +15,10 @@ export const api = axios.create({
   timeout: 20000,
 });
 
-export async function sendPrompt(prompt, language = "en") 
+export async function sendPrompt(prompt, language = "en", userId) 
 {
   try {
-    const res = await api.post(`/chat`, { prompt, language });
+    const res = await api.post(`/chat`, { prompt, language, userId });
     return res.data?.text || "I couldn't produce a reply.";
   } catch (error) {
     const baseUrl = getApiBaseUrl();

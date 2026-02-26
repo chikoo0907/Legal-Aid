@@ -1,4 +1,5 @@
 import { getChroma } from "./chroma.js";
+import { DefaultEmbeddingFunction } from "@chroma-core/default-embed";
 
 const collectionCache = new Map(); // name -> collection
 const collectionInitCache = new Map(); // name -> Promise<collection>
@@ -36,13 +37,18 @@ function languageLabel(languageCode) {
   return map[languageCode] || "English";
 }
 
+const embeddingFunction = new DefaultEmbeddingFunction();
+
 async function initCollection(name) {
   const chroma = await getChroma();
 
   // We intentionally avoid pulling in local embedding dependencies here.
   // If your collection was created with an embedding function (common in Chroma Cloud),
   // `queryTexts` will still work. If not, you can switch to `queryEmbeddings` later.
-  const col = await chroma.getOrCreateCollection({ name });
+  const col = await chroma.getOrCreateCollection({
+    name,
+    embeddingFunction,
+  });
   collectionCache.set(name, col);
   return col;
 }

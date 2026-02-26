@@ -594,6 +594,7 @@ export default function DocumentVault({ navigation }) {
               files={files}
               t={t}
               onFilePress={(id) => {
+                const doc = filteredDocuments.find((d) => d.id === id);
                 if (doc) showFileActions(doc);
               }}
               onFileMore={(id) => {
