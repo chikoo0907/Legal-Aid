@@ -95,22 +95,56 @@ function enforce7to10Lines(text) {
 
 function fallbackFromContext(context) {
   const clean = String(context || "").replace(/\s+/g, " ").trim();
-  if (!clean) return "";
-  // Create 8 short lines from raw context (best-effort).
-  const words = clean.split(" ");
-  const lines = [];
-  let buf = "";
-  for (const w of words) {
-    if ((buf + " " + w).trim().length > 110) {
-      lines.push(buf.trim());
-      buf = w;
-      if (lines.length >= 10) break;
-    } else {
-      buf = (buf + " " + w).trim();
-    }
+  if (!clean) {
+    return [
+      "Legal Information:",
+      "- Information not available in the Legal Aid database.",
+      "",
+      "Latest Updates (if available):",
+      "- No specific recent updates were found in the available information.",
+      "",
+      "Simplified Explanation:",
+      "- We could not find detailed information for this question in the current database.",
+      "",
+      "Important Note:",
+      "- Please rephrase your question with more details, or consult a qualified lawyer for specific advice.",
+      "",
+      "Disclaimer:",
+      "- This is general legal information, not a substitute for advice from a qualified lawyer.",
+    ].join("\n");
   }
-  if (buf && lines.length < 10) lines.push(buf.trim());
-  return lines.slice(0, 10).join("\n");
+
+  // Turn the raw context into a few short sentences
+  const sentences = clean
+    .split(/(?<=[.?!।])\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .slice(0, 6);
+
+  const legalInfoBullets = sentences.slice(0, 3).map((s) => `- ${s}`);
+  const simplifiedBullets = sentences.slice(0, 3).map(
+    (s) => `- In simple terms: ${s}`
+  );
+
+  return [
+    "Legal Information:",
+    ...(legalInfoBullets.length ? legalInfoBullets : ["- Key legal details are described in the available text."]),
+    "",
+    "Latest Updates (if available):",
+    "- No specific recent updates were found in the available information.",
+    "",
+    "Simplified Explanation:",
+    ...(simplifiedBullets.length
+      ? simplifiedBullets
+      : ["- This describes how the law applies in situations similar to your question."]),
+    "",
+    "Important Note:",
+    "- This summary is based only on the available database text and may not cover your full situation.",
+    "- For complex or urgent matters, you should speak to a qualified lawyer.",
+    "",
+    "Disclaimer:",
+    "- This is general legal information based on the available sources, not a substitute for advice from a qualified lawyer.",
+  ].join("\n");
 }
 
 // Check if prompt is a basic greeting or non-legal question
