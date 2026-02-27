@@ -20,7 +20,19 @@ export default function Splash({ navigation }) {
     } else if (!hasSelectedLanguage && !user?.language) {
       navigation.replace("Language");
     } else {
-      navigation.replace("Home");
+      // Route based on user role and verification status
+      if (user?.role === "lawyer") {
+        // Check if lawyer is verified
+        if (user?.lawyer?.isVerified) {
+          navigation.replace("LawyerHome");
+        } else {
+          // Lawyer not verified - show pending screen
+          navigation.replace("LawyerPendingVerification");
+        }
+      } else {
+        // Regular user
+        navigation.replace("Home");
+      }
     }
 
     setChecking(false);
